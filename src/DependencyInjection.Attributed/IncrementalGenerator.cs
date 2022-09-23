@@ -58,15 +58,14 @@ public class IncrementalGenerator : IIncrementalGenerator
     {
         var builder = new StringBuilder();
 
-        var rootNs = data.Options.GlobalOptions.TryGetValue("build_property.RootNamespace", out var value)
+        var rootNs = data.Options.GlobalOptions.TryGetValue("build_property.RootNamespace", out var value) && !string.IsNullOrEmpty(value)
             ? value
-            : (data.Options.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out value)
+            : (data.Options.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out value) && !string.IsNullOrEmpty(value)
             ? value
             : "Microsoft.Extensions.DependencyInjection");
 
-        var className = data.Options.GlobalOptions.TryGetValue("build_property.AddServicesClassName", out value) ?
+        var className = data.Options.GlobalOptions.TryGetValue("build_property.AddServicesClassName", out value) && !string.IsNullOrEmpty(value) ?
             value : "AddServicesExtension";
-
 
         builder.AppendLine(
           $$"""

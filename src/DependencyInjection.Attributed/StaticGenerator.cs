@@ -9,13 +9,13 @@ class StaticGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        var rootNs = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace", out var value)
+        var rootNs = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace", out var value) && !string.IsNullOrEmpty(value)
             ? value
-            : (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out value)
+            : (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out value) && !string.IsNullOrEmpty(value)
             ? value
             : "Microsoft.Extensions.DependencyInjection");
 
-        var className = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.AddServicesClassName", out value) ?
+        var className = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.AddServicesClassName", out value) && !string.IsNullOrEmpty(value) ?
             value : "AddServicesExtension";
 
         context.AddSource("AddServicesExtension.g",
