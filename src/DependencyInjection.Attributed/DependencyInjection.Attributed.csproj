@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Devlooped.Extensions.DependencyInjection.Attributed</PackageId>
+    <Title>Attributed-based compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies.</Title>
+    <PackFolder>analyzers/dotnet</PackFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NuGetizer" Version="0.9.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" Pack="false" />
+  </ItemGroup>
+
+</Project>
