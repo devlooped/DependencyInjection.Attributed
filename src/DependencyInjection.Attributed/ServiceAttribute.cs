@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// Configures the registration of a service in an <see cref="IServiceCollection"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class ServiceAttribute : Attribute
+    partial class ServiceAttribute : Attribute
     {
         /// <summary>
         /// Annotates the service with the lifetime.

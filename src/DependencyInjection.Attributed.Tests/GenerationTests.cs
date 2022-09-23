@@ -41,7 +41,7 @@ public record GenerationTests(ITestOutputHelper Output)
         var services = collection.BuildServiceProvider();
 
         using var scope = services.CreateScope();
-        
+
         var instance = scope.ServiceProvider.GetRequiredService<ScopedService>();
 
         // Within the scope, we get the same instance

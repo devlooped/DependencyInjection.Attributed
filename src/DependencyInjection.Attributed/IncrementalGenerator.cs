@@ -33,8 +33,8 @@ public class IncrementalGenerator : IIncrementalGenerator
         // NOTE: we recognize the attribute by name, not precise type. This makes the generator 
         // more flexible and avoids requiring any sort of run-time dependency.
         var services = types
-            .Where(x => x.GetAttributes().Any(a => 
-                a.AttributeClass?.Name == "ServiceAttribute" && 
+            .Where(x => x.GetAttributes().Any(a =>
+                a.AttributeClass?.Name == "ServiceAttribute" &&
                 a.ConstructorArguments.Length == 1 &&
                 a.ConstructorArguments[0].Value is int))
             .Select((x, _) => new
@@ -60,7 +60,7 @@ public class IncrementalGenerator : IIncrementalGenerator
 
         var rootNs = data.Options.GlobalOptions.TryGetValue("build_property.RootNamespace", out var value)
             ? value
-            : (data.Options.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out value) 
+            : (data.Options.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out value)
             ? value
             : "Microsoft.Extensions.DependencyInjection");
 
