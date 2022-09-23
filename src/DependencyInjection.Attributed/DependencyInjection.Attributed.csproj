@@ -5,7 +5,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Devlooped.Extensions.DependencyInjection.Attributed</AssemblyName>
     <PackageId>Devlooped.Extensions.DependencyInjection.Attributed</PackageId>
-    <Title>Attributed-based compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies.</Title>
+    <Title>Automatic compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies.</Title>
+    <Description>$(Title)</Description>
     <PackFolder>analyzers/dotnet</PackFolder>
   </PropertyGroup>
 
