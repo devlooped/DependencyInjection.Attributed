@@ -1,3 +1,9 @@
 ﻿<Project>
 
+  <ItemGroup>
+    <Compile Update="@(Compile -> WithMetadataValue('NuGetPackageId', 'Devlooped.Extensions.DependencyInjection.Attributed'))"
+             Visible="false"
+             Link="Devlooped\%(Filename)%(Extension)"/>
+  </ItemGroup>
+
 </Project>

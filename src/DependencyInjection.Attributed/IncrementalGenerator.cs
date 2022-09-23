@@ -58,11 +58,9 @@ public class IncrementalGenerator : IIncrementalGenerator
     {
         var builder = new StringBuilder();
 
-        var rootNs = data.Options.GlobalOptions.TryGetValue("build_property.RootNamespace", out var value) && !string.IsNullOrEmpty(value)
+        var rootNs = data.Options.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out var value) && !string.IsNullOrEmpty(value)
             ? value
-            : (data.Options.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out value) && !string.IsNullOrEmpty(value)
-            ? value
-            : "Microsoft.Extensions.DependencyInjection");
+            : "Microsoft.Extensions.DependencyInjection";
 
         var className = data.Options.GlobalOptions.TryGetValue("build_property.AddServicesClassName", out value) && !string.IsNullOrEmpty(value) ?
             value : "AddServicesExtension";
@@ -88,7 +86,7 @@ public class IncrementalGenerator : IIncrementalGenerator
             }
             """);
 
-        ctx.AddSource(methodName + ".g", builder.ToString());
+        ctx.AddSource(methodName + ".g", builder.ToString().Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
     }
 
     void AddServices(ImmutableArray<INamedTypeSymbol> types, string methodName, StringBuilder output)
@@ -96,10 +94,10 @@ public class IncrementalGenerator : IIncrementalGenerator
         foreach (var type in types)
         {
             var impl = type.ToDisplayString(fullNameFormat);
-            output.AppendLine($"        services.{methodName}<{impl}>();");
+            output.AppendLine($"            services.{methodName}<{impl}>();");
             foreach (var iface in type.AllInterfaces)
             {
-                output.AppendLine($"        services.{methodName}<{iface.ToDisplayString(fullNameFormat)}>(s => s.GetRequiredService<{impl}>());");
+                output.AppendLine($"            services.{methodName}<{iface.ToDisplayString(fullNameFormat)}>(s => s.GetRequiredService<{impl}>());");
             }
         }
     }
