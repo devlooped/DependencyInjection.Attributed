@@ -124,7 +124,7 @@ MSBuild properties:
 </PropertyGroup>
 ```
 
-Both default to `Microsoft.Extensions.DependencyInjection` and `AddServicesExtension` 
+They default to `Microsoft.Extensions.DependencyInjection` and `AddServicesExtension` 
 respectively.
 
 <!-- include https://github.com/devlooped/sponsors/raw/main/footer.md -->
