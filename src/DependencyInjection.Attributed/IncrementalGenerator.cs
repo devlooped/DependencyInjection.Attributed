@@ -94,10 +94,10 @@ public class IncrementalGenerator : IIncrementalGenerator
         foreach (var type in types)
         {
             var impl = type.ToDisplayString(fullNameFormat);
-            output.AppendLine($"            services.{methodName}<{impl}>();");
+            output.AppendLine($"            services.{methodName}<global::{impl}>();");
             foreach (var iface in type.AllInterfaces)
             {
-                output.AppendLine($"            services.{methodName}<{iface.ToDisplayString(fullNameFormat)}>(s => s.GetRequiredService<{impl}>());");
+                output.AppendLine($"            services.{methodName}<global::{iface.ToDisplayString(fullNameFormat)}>(s => s.GetRequiredService<global::{impl}>());");
             }
         }
     }

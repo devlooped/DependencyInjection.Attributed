@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.props" />
+
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -24,5 +26,7 @@
     <Using Include="Xunit" />
     <Using Include="Xunit.Abstractions" />
   </ItemGroup>
+
+  <Import Project="..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.targets" />
 
 </Project>
