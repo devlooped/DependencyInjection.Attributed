@@ -30,11 +30,11 @@ public interface IMyService
 }
 ```
 
-The default lifetime is [ServiceLifetime.Singleton](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicelifetime?#fields).
+The `ServiceLifetime` argument is optional and defaults to [ServiceLifetime.Singleton](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicelifetime?#fields).
 
 A source generator will emit (at compile-time) an `AddServices` extension method for 
 [IServiceCollection](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection) 
-which you can call from your startup code that sets up dependency injection, like:
+which you can call from your startup code that sets up your services, like:
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
@@ -56,13 +56,9 @@ app.Run();
 
 And that's it. The source generator will discover annotated types in the current 
 project and all its references too. Since the registration code is generated at 
-compile-time, there is no runtime-reflection whatsoever.
+compile-time, there is no run-time reflection (or dependencies) whatsoever.
 
 ## How It Works
-
-> NOTE: you can inspect the generated code by adding the following property 
-> to your project file: `<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>`.
-> Files will be emitted by default under `obj\[Configuration]\[TargetFramework]\Devlooped.Extensions.DependencyInjection.Attributed`
 
 The generated code that implements the registration looks like the following:
 
@@ -77,9 +73,12 @@ other two registrations just retrieve the same (according to its defined
 lifetime). This means the instance is reused and properly registered under 
 all implemented interfaces automatically.
 
-A linked source file named `ServiceAttribute` is also added by the nuget package, 
-but the source generator does not require it, since it matches the annotation 
-by attribute name.
+> NOTE: you can inspect the generated code by setting `EmitCompilerGeneratedFiles=true` 
+> in your project file and browsing the `generated` subfolder under `obj`.
+
+A linked source file named `ServiceAttribute` is also added to the project by 
+the nuget package, but the source generator does not require it, since it matches 
+the annotation by attribute name.
 
 ## Advanced Scenarios
 
