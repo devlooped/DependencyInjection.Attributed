@@ -1,0 +1,9 @@
+﻿<Project>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="RootNamespace" />
+    <CompilerVisibleProperty Include="AddServicesNamespace" />
+    <CompilerVisibleProperty Include="AddServicesClassName" />
+  </ItemGroup>
+
+</Project>

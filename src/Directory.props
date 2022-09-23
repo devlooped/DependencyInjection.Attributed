@@ -1,0 +1,8 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageProjectUrl>https://github.com/devlooped/DependencyInjection.Attributed</PackageProjectUrl>
+  </PropertyGroup>
+
+</Project>
