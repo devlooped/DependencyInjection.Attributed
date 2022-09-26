@@ -17,6 +17,7 @@ namespace Devlooped.Extensions.DependencyInjection.Attributed;
 public class IncrementalGenerator : IIncrementalGenerator
 {
     static readonly SymbolDisplayFormat fullNameFormat = new SymbolDisplayFormat(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.ExpandNullable);
@@ -94,10 +95,45 @@ public class IncrementalGenerator : IIncrementalGenerator
         foreach (var type in types)
         {
             var impl = type.ToDisplayString(fullNameFormat);
-            output.AppendLine($"            services.{methodName}<global::{impl}>();");
+            var registered = new HashSet<string>();
+
+            output.AppendLine($"            services.{methodName}<{impl}>();");
             foreach (var iface in type.AllInterfaces)
             {
-                output.AppendLine($"            services.{methodName}<global::{iface.ToDisplayString(fullNameFormat)}>(s => s.GetRequiredService<global::{impl}>());");
+                var ifaceName = iface.ToDisplayString(fullNameFormat);
+                if (!registered.Contains(ifaceName))
+                {
+                    output.AppendLine($"            services.{methodName}<{iface.ToDisplayString(fullNameFormat)}>(s => s.GetRequiredService<{impl}>());");
+                    registered.Add(ifaceName);
+                }
+
+                // Register covariant interfaces too, for at most one type parameter.
+                // TODO: perhaps explore registering for the full permutation of all out params?
+                if (iface.IsGenericType &&
+                    iface.TypeParameters.Length == 1 &&
+                    iface.TypeParameters[0].Variance == VarianceKind.Out)
+                {
+                    var typeParam = iface.TypeArguments[0];
+                    var candidates = typeParam.AllInterfaces.ToList();
+                    var baseType = typeParam.BaseType;
+                    while (baseType != null && baseType.SpecialType != SpecialType.System_Object)
+                    {
+                        candidates.Add(baseType);
+                        baseType = baseType.BaseType;
+                    }
+
+                    foreach (var candidate in candidates.Select(x => iface.ConstructedFrom.Construct(x))
+                        .ToImmutableHashSet(SymbolEqualityComparer.Default)
+                        .Where(x => x != null)
+                        .Select(x => x!.ToDisplayString(fullNameFormat)))
+                    {
+                        if (!registered.Contains(candidate))
+                        {
+                            output.AppendLine($"            services.{methodName}<{candidate}>(s => s.GetRequiredService<{impl}>());");
+                            registered.Add(candidate);
+                        }
+                    }
+                }
             }
         }
     }

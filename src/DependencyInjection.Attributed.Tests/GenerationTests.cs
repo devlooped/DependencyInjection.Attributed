@@ -65,6 +65,19 @@ public record GenerationTests(ITestOutputHelper Output)
     }
 
     [Fact]
+    public void RegisterWithGenericOutParameterHierarchy()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        Assert.NotNull(services.GetService<IObservable<MyEvent>>());
+        Assert.NotNull(services.GetService<IObservable<BaseEvent>>());
+        Assert.NotNull(services.GetService<IObservable<IEvent>>());
+        Assert.Null(services.GetService<IObservable<object>>());
+    }
+
+    [Fact]
     public void RegisterWithCustomServiceAttribute()
     {
         var collection = new ServiceCollection();
@@ -108,4 +121,13 @@ public class ScopedService : IComparable, IDisposable
 {
     public int CompareTo(object? obj) => throw new NotImplementedException();
     public void Dispose() { }
+}
+
+public interface IEvent { }
+public class BaseEvent : IEvent { }
+public class MyEvent : BaseEvent { }
+[Service]
+public class ObservableService : IObservable<MyEvent>
+{
+    public IDisposable Subscribe(IObserver<MyEvent> observer) => throw new NotImplementedException();
 }
