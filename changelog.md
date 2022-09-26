@@ -1,8 +1,12 @@
 # Changelog
 
-## [v1.0.0-beta](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.0.0-beta) (2022-09-26)
+## [v1.0.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.0.0) (2022-09-26)
 
-[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v0.9.0...v1.0.0-beta)
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v0.9.0...v1.0.0)
+
+:hammer: Other:
+
+- Support automatic registration of covariant implemented interfaces [\#6](https://github.com/devlooped/DependencyInjection.Attributed/issues/6)
 
 :twisted_rightwards_arrows: Merged:
 
