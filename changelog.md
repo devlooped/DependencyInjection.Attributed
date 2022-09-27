@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.0.3](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.0.3) (2022-09-27)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.0.2...v1.0.3)
+
+:hammer: Other:
+
+- Make sure package targets netstandard2.0 [\#10](https://github.com/devlooped/DependencyInjection.Attributed/issues/10)
+
 ## [v1.0.2](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.0.2) (2022-09-27)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.0.1...v1.0.2)
