@@ -8,19 +8,14 @@
     <Title>Automatic compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies.</Title>
     <Description>$(Title)</Description>
     <PackFolder>analyzers/dotnet</PackFolder>
+    <PackNone>true</PackNone>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="ServiceAttribute.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="ServiceAttribute.cs" BuildAction="Compile" CodeLanguage="cs" Pack="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.props" PackFolder="build" />
-    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.targets" PackFolder="build" />
+    <!-- PackFolder=None causes the PackagePath to equal the relative path in the project -->
+    <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" PackFolder="None" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,4 +25,69 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
   </ItemGroup>
 
+  <Target Name="PokePackageVersion" BeforeTargets="GetPackageContents" DependsOnTargets="CopyFilesToOutputDirectory"
+          Condition="'$(dotnet-nugetize)' == '' and Exists('$(OutputPath)\buildTransitive\Devlooped.Extensions.DependencyInjection.Attributed.props')">
+    <XmlPoke XmlInputPath="$(OutputPath)\buildTransitive\Devlooped.Extensions.DependencyInjection.Attributed.props" Query="/Project/PropertyGroup/DevloopedExtensionsDependencyInjectionVersion" Value="$(PackageVersion)" />
+  </Target>
+
+  <UsingTask
+    TaskName="XmlPoke"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Namespaces />
+      <Query />
+      <Value ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+      <XmlInputPath ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="System.Xml" />
+      <Using Namespace="System.Xml.Linq" />
+      <Using Namespace="System.Xml.XPath" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[			
+            var xmlns = new XmlNamespaceManager(new NameTable());
+            if (!string.IsNullOrEmpty(Namespaces))
+            {
+                using (var reader = XmlReader.Create(new StringReader(Namespaces), new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment }))
+                {
+                    while (reader.Read())
+                    {
+                        var prefix = reader.GetAttribute("Prefix");
+                        var uri = reader.GetAttribute("Uri");
+                        xmlns.AddNamespace(prefix, uri);
+                    }
+                }
+            }
+
+            var doc = XDocument.Load(XmlInputPath.GetMetadata("FullPath"), LoadOptions.PreserveWhitespace);
+			var expr = doc.CreateNavigator().Compile(Query);
+			expr.SetContext (xmlns);
+
+			var replacements = 0;
+            foreach (var node in doc.CreateNavigator().Select(expr).OfType<XPathNavigator>().Select(x => x.UnderlyingObject))
+            {
+				var attr = node as XAttribute;
+				var elem = node as XElement;
+				if (attr != null) {
+					attr.SetValue (Value.ItemSpec);
+					replacements++;
+				} else if (elem != null) {
+					elem.SetValue (Value.ItemSpec);
+					replacements++;
+				}
+            }
+
+			if (replacements != 0) {
+				Log.LogMessage ("Made {0} replacement(s).", replacements);
+				doc.Save(XmlInputPath.GetMetadata ("FullPath"), SaveOptions.DisableFormatting);
+			} else {
+				Log.LogMessage("No nodes were affected.");
+			}
+			]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  
 </Project>

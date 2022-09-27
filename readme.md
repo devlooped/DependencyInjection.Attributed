@@ -85,17 +85,16 @@ the annotation by attribute name.
 ### Your Own ServiceAttribute
 
 If you want to declare your own `ServiceAttribute` and reuse from your projects, 
-you can do it too. Just exclude the automatic `contentFiles` that the package 
-reference contributes to your project:
+you can do it too by setting the following property in your project file:
 
 ```xml
-  <ItemGroup>
-    <PackageReference Include="Devlooped.Extensions.DependencyInjection.Attributed" ExcludeAssets="contentFiles" Version="..." />
-  </ItemGroup>
+<PropertyGroup>
+    <IncludeServiceAttribute>false</IncludeServiceAttribute>
+</PropertyGroup>
 ```
 
-This will not add the attribute to the project. You can now create the attribute 
-in your own shared library project like so:
+This will not add the attribute to the project's compilation. You can now create 
+the attribute in your own shared library project like so:
 
 ```csharp
 [AttributeUsage(AttributeTargets.Class)]
@@ -107,7 +106,7 @@ public class ServiceAttribute : Attribute
 
 > NOTE: since the constructor argument is only used by the source generation to 
 > detemine the registration style, but never at run-time, you don't even need 
-> to keep it in a field or property!
+> to keep it around in a field or property!
 
 With this in place, you only need to add the package to the top-level project 
 that is adding the services to the collection!
