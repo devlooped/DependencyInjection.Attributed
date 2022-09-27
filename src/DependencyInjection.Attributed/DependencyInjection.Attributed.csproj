@@ -8,14 +8,13 @@
     <Title>Automatic compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies.</Title>
     <Description>$(Title)</Description>
     <PackFolder>analyzers/dotnet</PackFolder>
-    <PackNone>true</PackNone>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="ServiceAttribute.cs" />
     <Content Include="ServiceAttribute.cs" BuildAction="Compile" CodeLanguage="cs" Pack="true" />
-    <!-- PackFolder=None causes the PackagePath to equal the relative path in the project -->
-    <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" PackFolder="None" />
+    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.props" PackFolder="buildTransitive/$(TargetFramework)" />
+    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.targets" PackFolder="buildTransitive/$(TargetFramework)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,15 +24,11 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
   </ItemGroup>
 
-  <Target Name="PokePackageVersion" BeforeTargets="GetPackageContents" DependsOnTargets="CopyFilesToOutputDirectory"
-          Condition="'$(dotnet-nugetize)' == '' and Exists('$(OutputPath)\buildTransitive\Devlooped.Extensions.DependencyInjection.Attributed.props')">
+  <Target Name="PokePackageVersion" BeforeTargets="GetPackageContents" DependsOnTargets="CopyFilesToOutputDirectory" Condition="'$(dotnet-nugetize)' == '' and Exists('$(OutputPath)\buildTransitive\Devlooped.Extensions.DependencyInjection.Attributed.props')">
     <XmlPoke XmlInputPath="$(OutputPath)\buildTransitive\Devlooped.Extensions.DependencyInjection.Attributed.props" Query="/Project/PropertyGroup/DevloopedExtensionsDependencyInjectionVersion" Value="$(PackageVersion)" />
   </Target>
 
-  <UsingTask
-    TaskName="XmlPoke"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+  <UsingTask TaskName="XmlPoke" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <Namespaces />
       <Query />
