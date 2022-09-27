@@ -13,8 +13,8 @@
   <ItemGroup>
     <Compile Remove="ServiceAttribute.cs" />
     <Content Include="ServiceAttribute.cs" BuildAction="Compile" CodeLanguage="cs" Pack="true" />
-    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.props" PackFolder="buildTransitive/$(TargetFramework)" />
-    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.targets" PackFolder="buildTransitive/$(TargetFramework)" />
+    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.props" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive/$(TargetFramework)" />
+    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.targets" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive/$(TargetFramework)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,8 +24,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
   </ItemGroup>
 
-  <Target Name="PokePackageVersion" BeforeTargets="GetPackageContents" DependsOnTargets="CopyFilesToOutputDirectory" Condition="'$(dotnet-nugetize)' == '' and Exists('$(OutputPath)\buildTransitive\Devlooped.Extensions.DependencyInjection.Attributed.props')">
-    <XmlPoke XmlInputPath="$(OutputPath)\buildTransitive\Devlooped.Extensions.DependencyInjection.Attributed.props" Query="/Project/PropertyGroup/DevloopedExtensionsDependencyInjectionVersion" Value="$(PackageVersion)" />
+  <Target Name="PokePackageVersion" BeforeTargets="GetPackageContents" DependsOnTargets="CopyFilesToOutputDirectory" Condition="'$(dotnet-nugetize)' == '' and Exists('$(OutputPath)\Devlooped.Extensions.DependencyInjection.Attributed.props')">
+    <XmlPoke XmlInputPath="$(OutputPath)\Devlooped.Extensions.DependencyInjection.Attributed.props" Query="/Project/PropertyGroup/DevloopedExtensionsDependencyInjectionVersion" Value="$(PackageVersion)" />
   </Target>
 
   <UsingTask TaskName="XmlPoke" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
