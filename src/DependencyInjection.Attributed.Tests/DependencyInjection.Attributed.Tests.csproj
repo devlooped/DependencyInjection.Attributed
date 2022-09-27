@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.props" />
+  <Import Project="..\DependencyInjection.Attributed\bin\$(Configuration)\netstandard2.0\build\Devlooped.Extensions.DependencyInjection.Attributed.props" />
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -27,6 +27,6 @@
     <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 
-  <Import Project="..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.targets" />
+  <Import Project="..\DependencyInjection.Attributed\bin\$(Configuration)\netstandard2.0\build\Devlooped.Extensions.DependencyInjection.Attributed.targets" />
 
 </Project>
