@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.0.1](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.0.1) (2022-09-27)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.0.0...v1.0.1)
+
+:twisted_rightwards_arrows: Merged:
+
+- Fix transitive contentFiles support that's missing in nuget [\#9](https://github.com/devlooped/DependencyInjection.Attributed/pull/9) (@kzu)
+
 ## [v1.0.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.0.0) (2022-09-26)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v0.9.0...v1.0.0)
