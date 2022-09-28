@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DependencyInjection;
+namespace Tests;
 
 public record GenerationTests(ITestOutputHelper Output)
 {
@@ -50,6 +51,23 @@ public record GenerationTests(ITestOutputHelper Output)
 
         // Outside the scope, we don't
         Assert.NotSame(instance, services.GetRequiredService<IComparable>());
+    }
+
+    [Fact]
+    public void ResolvesDependency()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        var singleton = services.GetRequiredService<SingletonService>();
+
+        using var scope = services.CreateScope();
+
+        var instance = scope.ServiceProvider.GetRequiredService<ScopedService>();
+
+        // Within the scope, we get the same instance
+        Assert.Same(singleton, instance.Singleton);
     }
 
     [Fact]
@@ -119,6 +137,11 @@ public class TransientService : ICloneable, IDisposable
 [Service(ServiceLifetime.Scoped)]
 public class ScopedService : IComparable, IDisposable
 {
+    public ScopedService(SingletonService singleton) => Singleton = singleton;
+    // Will not be picked up because it's not accessible from within the assembly
+    // If it were internal, it would be the selected one instead (most args)
+    protected ScopedService(SingletonService singleton, CancellationTokenSource source) => Singleton = singleton;
+    public SingletonService Singleton { get; }
     public int CompareTo(object? obj) => throw new NotImplementedException();
     public void Dispose() { }
 }

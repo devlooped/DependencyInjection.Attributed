@@ -48,26 +48,31 @@ public class IncrementalGenerator : IIncrementalGenerator
                 Lifetime = (int)x.GetAttributes().First(selector).ConstructorArguments[0].Value!
             });
 
+        var options = context.AnalyzerConfigOptionsProvider.Combine(
+            context.CompilationProvider.Select((c, _) => (Func<ISymbol, bool>)(s => c.IsSymbolAccessibleWithin(s, c.Assembly))));
+
         // Only requisite is that we define Scoped = 0, Singleton = 1 and Transient = 2.
         // This matches https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicelifetime?view=dotnet-plat-ext-6.0#fields
-        var singleton = services.Where(x => x.Lifetime == 0).Select((x, _) => x.Type).Collect().Combine(context.AnalyzerConfigOptionsProvider);
-        var scoped = services.Where(x => x.Lifetime == 1).Select((x, _) => x.Type).Collect().Combine(context.AnalyzerConfigOptionsProvider);
-        var transient = services.Where(x => x.Lifetime == 2).Select((x, _) => x.Type).Collect().Combine(context.AnalyzerConfigOptionsProvider);
+        var singleton = services.Where(x => x.Lifetime == 0).Select((x, _) => x.Type).Collect().Combine(options);
+        var scoped = services.Where(x => x.Lifetime == 1).Select((x, _) => x.Type).Collect().Combine(options);
+        var transient = services.Where(x => x.Lifetime == 2).Select((x, _) => x.Type).Collect().Combine(options);
 
         context.RegisterSourceOutput(scoped, (ctx, data) => AddPartial("AddScoped", ctx, data));
         context.RegisterSourceOutput(singleton, (ctx, data) => AddPartial("AddSingleton", ctx, data));
         context.RegisterSourceOutput(transient, (ctx, data) => AddPartial("AddTransient", ctx, data));
+
+        //Debugger.Launch();
     }
 
-    void AddPartial(string methodName, SourceProductionContext ctx, (ImmutableArray<INamedTypeSymbol> Types, AnalyzerConfigOptionsProvider Options) data)
+    void AddPartial(string methodName, SourceProductionContext ctx, (ImmutableArray<INamedTypeSymbol> Types, (AnalyzerConfigOptionsProvider Config, Func<ISymbol, bool> IsAccessible) Options) data)
     {
         var builder = new StringBuilder();
 
-        var rootNs = data.Options.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out var value) && !string.IsNullOrEmpty(value)
+        var rootNs = data.Options.Config.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out var value) && !string.IsNullOrEmpty(value)
             ? value
             : "Microsoft.Extensions.DependencyInjection";
 
-        var className = data.Options.GlobalOptions.TryGetValue("build_property.AddServicesClassName", out value) && !string.IsNullOrEmpty(value) ?
+        var className = data.Options.Config.GlobalOptions.TryGetValue("build_property.AddServicesClassName", out value) && !string.IsNullOrEmpty(value) ?
             value : "AddServicesExtension";
 
         builder.AppendLine(
@@ -83,7 +88,7 @@ public class IncrementalGenerator : IIncrementalGenerator
                     {
             """);
 
-        AddServices(data.Types, methodName, builder);
+        AddServices(data.Types, data.Options.IsAccessible, methodName, builder);
         builder.AppendLine(
         """
                     }
@@ -94,14 +99,27 @@ public class IncrementalGenerator : IIncrementalGenerator
         ctx.AddSource(methodName + ".g", builder.ToString().Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
     }
 
-    void AddServices(ImmutableArray<INamedTypeSymbol> types, string methodName, StringBuilder output)
+    void AddServices(ImmutableArray<INamedTypeSymbol> types, Func<ISymbol, bool> isAccessible, string methodName, StringBuilder output)
     {
         foreach (var type in types)
         {
             var impl = type.ToDisplayString(fullNameFormat);
             var registered = new HashSet<string>();
 
-            output.AppendLine($"            services.{methodName}<{impl}>();");
+            var ctor = type.InstanceConstructors.Where(m => isAccessible(m))
+                .OrderByDescending(m => m.Parameters.Length)
+                .FirstOrDefault();
+
+            if (ctor != null && ctor.Parameters.Length > 0)
+            {
+                var args = string.Join(", ", ctor.Parameters.Select(p => $"s.GetRequiredService<{p.Type.ToDisplayString(fullNameFormat)}>()"));
+                output.AppendLine($"            services.{methodName}(s => new {impl}({args}));");
+            }
+            else
+            {
+                output.AppendLine($"            services.{methodName}(s => new {impl}());");
+            }
+
             foreach (var iface in type.AllInterfaces)
             {
                 var ifaceName = iface.ToDisplayString(fullNameFormat);
