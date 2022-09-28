@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Tests;
+namespace Tests.DependencyInjection;
 
 public record GenerationTests(ITestOutputHelper Output)
 {
