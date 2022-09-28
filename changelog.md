@@ -1,5 +1,24 @@
 # Changelog
 
+## [v1.1.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.1.0) (2022-09-28)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.0.3...v1.1.0)
+
+:sparkles: Implemented enhancements:
+
+- Skip run-time constructor invocation reflection [\#15](https://github.com/devlooped/DependencyInjection.Attributed/issues/15)
+- Replace ServiceAttribute.cs inclusion via targets with source generator-based one [\#12](https://github.com/devlooped/DependencyInjection.Attributed/issues/12)
+
+:bug: Fixed bugs:
+
+- Library does not work on MAUI [\#13](https://github.com/devlooped/DependencyInjection.Attributed/issues/13)
+
+:twisted_rightwards_arrows: Merged:
+
+- Add support for MEF attributes [\#18](https://github.com/devlooped/DependencyInjection.Attributed/pull/18) (@kzu)
+- Register implementation factory rather than type [\#16](https://github.com/devlooped/DependencyInjection.Attributed/pull/16) (@kzu)
+- Replace ServiceAttribute inclusion via targets with source generator [\#14](https://github.com/devlooped/DependencyInjection.Attributed/pull/14) (@kzu)
+
 ## [v1.0.3](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.0.3) (2022-09-27)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.0.2...v1.0.3)
@@ -12,7 +31,7 @@
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.0.1...v1.0.2)
 
-:bug: Fixed bugs:
+:sparkles: Implemented enhancements:
 
 - Fix transitive contentFiles support that's missing in nuget [\#8](https://github.com/devlooped/DependencyInjection.Attributed/issues/8)
 
@@ -32,7 +51,7 @@
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v0.9.0...v1.0.0)
 
-:hammer: Other:
+:sparkles: Implemented enhancements:
 
 - Support automatic registration of covariant implemented interfaces [\#6](https://github.com/devlooped/DependencyInjection.Attributed/issues/6)
 
