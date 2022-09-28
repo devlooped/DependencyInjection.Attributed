@@ -72,7 +72,7 @@ static partial class AddServicesExtension
 {
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
-        services.AddScoped<MyService>();
+        services.AddScoped(s => new MyService());
         services.AddScoped<IMyService>(s => s.GetRequiredService<MyService>());
         services.AddScoped<IDisposable>(s => s.GetRequiredService<MyService>());
         
@@ -88,9 +88,13 @@ all implemented interfaces automatically.
 > NOTE: you can inspect the generated code by setting `EmitCompilerGeneratedFiles=true` 
 > in your project file and browsing the `generated` subfolder under `obj`.
 
-A linked source file named `ServiceAttribute` is also added to the project by 
-the nuget package, but the source generator does not require it, since it matches 
-the annotation by attribute name.
+If the service type has dependencies, they will be resolved from the service 
+provider by the implementation factory too, like:
+
+```csharp
+services.AddScoped(s => new MyService(s.GetRequiredService<IMyDependency>(), ...));
+```
+
 
 ## Advanced Scenarios
 
