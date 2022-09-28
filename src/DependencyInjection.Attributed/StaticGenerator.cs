@@ -1,11 +1,43 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Diagnostics;
+using Microsoft.CodeAnalysis;
 
 namespace Devlooped.Extensions.DependencyInjection.Attributed;
 
 [Generator(LanguageNames.CSharp)]
 class StaticGenerator : ISourceGenerator
 {
-    public void Initialize(GeneratorInitializationContext context) { }
+    public void Initialize(GeneratorInitializationContext context)
+    {
+        context.RegisterForPostInitialization(c =>
+        {
+            c.AddSource("ServiceAttribute.g",
+                """
+                using System;
+
+                namespace Microsoft.Extensions.DependencyInjection
+                {
+                    /// <summary>
+                    /// Configures the registration of a service in an <see cref="IServiceCollection"/>.
+                    /// </summary>
+                    [AttributeUsage(AttributeTargets.Class)]
+                    partial class ServiceAttribute : Attribute
+                    {
+                        /// <summary>
+                        /// Annotates the service with the lifetime.
+                        /// </summary>
+                        public ServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Singleton)
+                            => Lifetime = lifetime;
+
+                        /// <summary>
+                        /// <see cref="ServiceLifetime"/> associated with a registered service 
+                        /// in an <see cref="IServiceCollection"/>.
+                        /// </summary>
+                        public ServiceLifetime Lifetime { get; }
+                    }
+                }
+                """);
+        });
+    }
 
     public void Execute(GeneratorExecutionContext context)
     {

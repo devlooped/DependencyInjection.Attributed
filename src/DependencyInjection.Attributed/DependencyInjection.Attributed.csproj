@@ -11,10 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ServiceAttribute.cs" />
-    <Content Include="ServiceAttribute.cs" BuildAction="Compile" CodeLanguage="cs" Pack="true" />
-    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.props" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive/$(TargetFramework)" />
-    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.targets" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive/$(TargetFramework)" />
+    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.props" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
+    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.targets" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
   </ItemGroup>
 
   <ItemGroup>
