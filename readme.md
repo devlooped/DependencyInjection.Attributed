@@ -43,7 +43,7 @@ which you can call from your startup code that sets up your services, like:
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-// Add discovered services to the container.
+// NOTE: **Add discovered services to the container**
 builder.Services.AddServices();
 // ...
 
@@ -56,7 +56,8 @@ app.MapGet("/", (IMyService service) => service.Message);
 app.Run();
 ```
 
-> NOTE: the service is available automatically for the scoped request.
+> NOTE: the service is available automatically for the scoped request, because 
+> we called the generated `AddServices` that registers the discovered services. 
 
 And that's it. The source generator will discover annotated types in the current 
 project and all its references too. Since the registration code is generated at 
@@ -67,9 +68,16 @@ compile-time, there is no run-time reflection (or dependencies) whatsoever.
 The generated code that implements the registration looks like the following:
 
 ```csharp
-services.AddScoped<MyService>();
-services.AddScoped<IMyService>(s => s.GetRequiredService<MyService>());
-services.AddScoped<IDisposable>(s => s.GetRequiredService<MyService>());
+static partial class AddServicesExtension
+{
+    public static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.AddScoped<MyService>();
+        services.AddScoped<IMyService>(s => s.GetRequiredService<MyService>());
+        services.AddScoped<IDisposable>(s => s.GetRequiredService<MyService>());
+        
+        return services;
+    }
 ```
 
 Note how the service is registered as scoped with its own type first, and the 
