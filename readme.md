@@ -13,7 +13,7 @@ Automatic compile-time service registrations for Microsoft.Extensions.Dependency
 ## Usage
 
 After [installing the nuget package](https://www.nuget.org/packages/Devlooped.Extensions.DependencyInjection.Attributed), 
-by default a new `[Service(ServiceLifetime)]` attribute will be available to annotate your types:
+a new `[Service(ServiceLifetime)]` attribute will be available to annotate your types:
 
 ```csharp
 [Service(ServiceLifetime.Scoped)]
@@ -31,6 +31,10 @@ public interface IMyService
 ```
 
 The `ServiceLifetime` argument is optional and defaults to [ServiceLifetime.Singleton](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicelifetime?#fields).
+
+> NOTE: The attribute is matched by simple name, so you can define your own attribute 
+> in your own assembly. It only has to provide a constructor receiving a 
+> [ServiceLifetime](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicelifetime) argument.
 
 A source generator will emit (at compile-time) an `AddServices` extension method for 
 [IServiceCollection](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection) 
@@ -85,16 +89,8 @@ the annotation by attribute name.
 ### Your Own ServiceAttribute
 
 If you want to declare your own `ServiceAttribute` and reuse from your projects, 
-you can do it too by setting the following property in your project file:
-
-```xml
-<PropertyGroup>
-    <IncludeServiceAttribute>false</IncludeServiceAttribute>
-</PropertyGroup>
-```
-
-This will not add the attribute to the project's compilation. You can now create 
-the attribute in your own shared library project like so:
+so as to avoid taking a (compile-time) dependency on this package from your library 
+projects, you can just declare it like so:
 
 ```csharp
 [AttributeUsage(AttributeTargets.Class)]
@@ -110,6 +106,8 @@ public class ServiceAttribute : Attribute
 
 With this in place, you only need to add the package to the top-level project 
 that is adding the services to the collection!
+
+The attribute is matched by simple name, so it can exist in any namespace.
 
 ### Customize Generated Class
 

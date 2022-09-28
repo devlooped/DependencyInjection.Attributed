@@ -1,29 +1,8 @@
 ﻿<Project>
 
   <PropertyGroup>
-    <DevloopedDependencyInjectionContentFilesPath>$(MSBuildThisFileDirectory)..\contentFiles\$(DefaultLanguageSourceExtension.TrimStart('.'))\netstandard2.0</DevloopedDependencyInjectionContentFilesPath>
+    <!-- Backwards compatiblity -->
+    <AddServiceAttribute Condition="'$(IncludeServiceAttribute)' != ''">$(IncludeServiceAttribute)</AddServiceAttribute>
   </PropertyGroup>
-
-  <!-- In transitive mode, contentFiles will not flow: https://github.com/NuGet/Home/issues/6720 and others -->
-  <ItemGroup Condition="'$(IncludeServiceAttribute)' != 'false' and Exists('$(DevloopedDependencyInjectionContentFilesPath)') and '@(Compile -> WithMetadataValue('NuGetPackageId', 'Devlooped.Extensions.DependencyInjection.Attributed'))' == ''">
-    <Compile Include="$(DevloopedDependencyInjectionContentFilesPath)\*$(DefaultLanguageSourceExtension)">
-      <NuGetPackageId>Devlooped.Extensions.DependencyInjection.Attributed</NuGetPackageId>
-      <NuGetPackageVersion>$(DevloopedExtensionsDependencyInjectionVersion)</NuGetPackageVersion>
-      <NuGetItemType>Compile</NuGetItemType>
-      <Pack>false</Pack>
-      <Private>False</Private>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(IncludeServiceAttribute)' == 'false'">
-    <Compile Remove="@(Compile -> WithMetadataValue('NuGetPackageId', 'Devlooped.Extensions.DependencyInjection.Attributed'))" />
-  </ItemGroup>
-
-  <!-- Update Link/Visible for both transitively and non-transitively added contentFiles -->
-  <ItemGroup Condition="'$(IncludeServiceAttribute)' != 'false'">
-    <Compile Update="@(Compile -> WithMetadataValue('NuGetPackageId', 'Devlooped.Extensions.DependencyInjection.Attributed'))"
-             Visible="false"
-             Link="Devlooped\Extensions\DependencyInjection\Attributed\%(Filename)%(Extension)"/>
-  </ItemGroup>
   
 </Project>

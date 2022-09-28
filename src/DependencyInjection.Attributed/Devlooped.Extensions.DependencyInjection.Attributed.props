@@ -2,9 +2,11 @@
 
   <PropertyGroup>
     <DevloopedExtensionsDependencyInjectionVersion>42.42.42</DevloopedExtensionsDependencyInjectionVersion>
+    <AddServiceAttribute Condition="'$(AddServiceAttribute)' == ''">true</AddServiceAttribute>
   </PropertyGroup>
 
   <ItemGroup>
+    <CompilerVisibleProperty Include="AddServiceAttribute" />
     <CompilerVisibleProperty Include="AddServicesNamespace" />
     <CompilerVisibleProperty Include="AddServicesClassName" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -31,17 +32,20 @@ public class IncrementalGenerator : IIncrementalGenerator
             return visitor.TypeSymbols;
         });
 
+        var selector = (AttributeData attr) =>
+            (attr.AttributeClass?.Name == "ServiceAttribute" || attr.AttributeClass?.Name == "Service") &&
+            attr.ConstructorArguments.Length == 1 &&
+            attr.ConstructorArguments[0].Kind == TypedConstantKind.Enum &&
+            attr.ConstructorArguments[0].Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::Microsoft.Extensions.DependencyInjection.ServiceLifetime";
+
         // NOTE: we recognize the attribute by name, not precise type. This makes the generator 
         // more flexible and avoids requiring any sort of run-time dependency.
         var services = types
-            .Where(x => x.GetAttributes().Any(a =>
-                a.AttributeClass?.Name == "ServiceAttribute" &&
-                a.ConstructorArguments.Length == 1 &&
-                a.ConstructorArguments[0].Value is int))
+            .Where(x => x.GetAttributes().Any(selector))
             .Select((x, _) => new
             {
                 Type = x,
-                Lifetime = (int)x.GetAttributes().First(a => a.AttributeClass?.Name == "ServiceAttribute").ConstructorArguments[0].Value!
+                Lifetime = (int)x.GetAttributes().First(selector).ConstructorArguments[0].Value!
             });
 
         // Only requisite is that we define Scoped = 0, Singleton = 1 and Transient = 2.
