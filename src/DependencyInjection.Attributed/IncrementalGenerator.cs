@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -32,30 +31,72 @@ public class IncrementalGenerator : IIncrementalGenerator
             return visitor.TypeSymbols;
         });
 
-        var selector = (AttributeData attr) =>
+        bool IsService(AttributeData attr) =>
             (attr.AttributeClass?.Name == "ServiceAttribute" || attr.AttributeClass?.Name == "Service") &&
             attr.ConstructorArguments.Length == 1 &&
             attr.ConstructorArguments[0].Kind == TypedConstantKind.Enum &&
             attr.ConstructorArguments[0].Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::Microsoft.Extensions.DependencyInjection.ServiceLifetime";
 
+        bool IsExport(AttributeData attr)
+        {
+            var attrName = attr.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            return attrName == "global::System.Composition.ExportAttribute" ||
+                attrName == "global::System.ComponentModel.Composition.ExportAttribute";
+        };
+
         // NOTE: we recognize the attribute by name, not precise type. This makes the generator 
         // more flexible and avoids requiring any sort of run-time dependency.
         var services = types
-            .Where(x => x.GetAttributes().Any(selector))
-            .Select((x, _) => new
+            .Select((x, _) =>
             {
-                Type = x,
-                Lifetime = (int)x.GetAttributes().First(selector).ConstructorArguments[0].Value!
-            });
+                var attrs = x.GetAttributes();
+                var serviceAttr = attrs.FirstOrDefault(IsService);
+                var service = serviceAttr != null || attrs.Any(IsExport);
+
+                if (!service)
+                    return null;
+
+                // Default lifetime is singleton for [Service], Transient for MEF
+                var lifetime = serviceAttr != null ? 0 : 2;
+                if (serviceAttr != null)
+                {
+                    lifetime = (int)serviceAttr.ConstructorArguments[0].Value!;
+                }
+                else
+                {
+                    // In NuGet MEF, [Shared] makes exports singleton
+                    if (attrs.Any(a => a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.Composition.SharedAttribute"))
+                    {
+                        lifetime = 0;
+                    }
+                    // In .NET MEF, [PartCreationPolicy(CreationPolicy.Shared)] does it.
+                    else if (attrs.Any(a =>
+                        a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.ComponentModel.Composition.PartCreationPolicyAttribute" &&
+                        a.ConstructorArguments.Length == 1 &&
+                        a.ConstructorArguments[0].Kind == TypedConstantKind.Enum &&
+                        a.ConstructorArguments[0].Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.ComponentModel.Composition.CreationPolicy" &&
+                        (int)a.ConstructorArguments[0].Value! == 1))
+                    {
+                        lifetime = 0;
+                    }
+                }
+
+                return new
+                {
+                    Type = x,
+                    Lifetime = lifetime
+                };
+            })
+            .Where(x => x != null);
 
         var options = context.AnalyzerConfigOptionsProvider.Combine(
             context.CompilationProvider.Select((c, _) => (Func<ISymbol, bool>)(s => c.IsSymbolAccessibleWithin(s, c.Assembly))));
 
         // Only requisite is that we define Scoped = 0, Singleton = 1 and Transient = 2.
         // This matches https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicelifetime?view=dotnet-plat-ext-6.0#fields
-        var singleton = services.Where(x => x.Lifetime == 0).Select((x, _) => x.Type).Collect().Combine(options);
-        var scoped = services.Where(x => x.Lifetime == 1).Select((x, _) => x.Type).Collect().Combine(options);
-        var transient = services.Where(x => x.Lifetime == 2).Select((x, _) => x.Type).Collect().Combine(options);
+        var singleton = services.Where(x => x!.Lifetime == 0).Select((x, _) => x!.Type).Collect().Combine(options);
+        var scoped = services.Where(x => x!.Lifetime == 1).Select((x, _) => x!.Type).Collect().Combine(options);
+        var transient = services.Where(x => x!.Lifetime == 2).Select((x, _) => x!.Type).Collect().Combine(options);
 
         context.RegisterSourceOutput(scoped, (ctx, data) => AddPartial("AddScoped", ctx, data));
         context.RegisterSourceOutput(singleton, (ctx, data) => AddPartial("AddSingleton", ctx, data));
@@ -106,7 +147,13 @@ public class IncrementalGenerator : IIncrementalGenerator
             var impl = type.ToDisplayString(fullNameFormat);
             var registered = new HashSet<string>();
 
-            var ctor = type.InstanceConstructors.Where(m => isAccessible(m))
+            var importing = type.InstanceConstructors.FirstOrDefault(m =>
+                m.GetAttributes().Any(a =>
+                    a.AttributeClass?.ToDisplayString(fullNameFormat) == "global::System.Composition.ImportingConstructorAttribute" ||
+                    a.AttributeClass?.ToDisplayString(fullNameFormat) == "global::System.ComponentModel.Composition.ImportingConstructorAttribute"));
+
+            var ctor = importing ?? type.InstanceConstructors
+                .Where(m => isAccessible(m))
                 .OrderByDescending(m => m.Parameters.Length)
                 .FirstOrDefault();
 
