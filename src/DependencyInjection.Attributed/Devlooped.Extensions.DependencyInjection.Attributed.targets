@@ -3,6 +3,13 @@
   <PropertyGroup>
     <!-- Backwards compatiblity -->
     <AddServiceAttribute Condition="'$(IncludeServiceAttribute)' != ''">$(IncludeServiceAttribute)</AddServiceAttribute>
+    <DefineConstants Condition="'$(Language)' == 'C#' and '$(AddServiceAttribute)' == 'true'">$(DefineConstants);DDI_ADDSERVICE</DefineConstants>
   </PropertyGroup>
+
+  <Target Name="_AddDDI_Constant" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <DefineConstants Condition="'$(Language)' == 'C#' and '$(AddServiceAttribute)' == 'true'">$(DefineConstants);DDI_ADDSERVICE</DefineConstants>
+    </PropertyGroup>
+  </Target>
   
 </Project>
