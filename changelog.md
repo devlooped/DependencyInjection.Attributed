@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.1.1](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.1.1) (2022-10-03)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.1.0...v1.1.1)
+
+:sparkles: Implemented enhancements:
+
+- Add support for MEF attributes [\#17](https://github.com/devlooped/DependencyInjection.Attributed/issues/17)
+
 ## [v1.1.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.1.0) (2022-09-28)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.0.3...v1.1.0)
