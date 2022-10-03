@@ -130,10 +130,19 @@ public class ServiceAttribute : Attribute
 > detemine the registration style, but never at run-time, you don't even need 
 > to keep it around in a field or property!
 
-With this in place, you only need to add the package to the top-level project 
+With this in place, you only need to add this package to the top-level project 
 that is adding the services to the collection!
 
-The attribute is matched by simple name, so it can exist in any namespace.
+The attribute is matched by simple name, so it can exist in any namespace. 
+
+If you want to avoid adding the attribute to the project referencing this package, 
+set the `$(AddServiceAttribute)` to `true` via MSBuild:
+
+```xml
+<PropertyGroup>
+  <AddServiceAttribute>false</AddServiceAttribute>
+</PropertyGroup>
+```
 
 ### Choose Constructor
 
