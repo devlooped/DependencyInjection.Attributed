@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.1.3](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.1.3) (2022-10-31)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.1.2...v1.1.3)
+
+:sparkles: Implemented enhancements:
+
+- Optimize incremental codegen by only registering for implementation source generation [\#24](https://github.com/devlooped/DependencyInjection.Attributed/issues/24)
+
 ## [v1.1.2](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.1.2) (2022-10-03)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.1.1...v1.1.2)
