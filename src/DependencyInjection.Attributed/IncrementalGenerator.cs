@@ -98,11 +98,9 @@ public class IncrementalGenerator : IIncrementalGenerator
         var scoped = services.Where(x => x!.Lifetime == 1).Select((x, _) => x!.Type).Collect().Combine(options);
         var transient = services.Where(x => x!.Lifetime == 2).Select((x, _) => x!.Type).Collect().Combine(options);
 
-        context.RegisterSourceOutput(scoped, (ctx, data) => AddPartial("AddScoped", ctx, data));
-        context.RegisterSourceOutput(singleton, (ctx, data) => AddPartial("AddSingleton", ctx, data));
-        context.RegisterSourceOutput(transient, (ctx, data) => AddPartial("AddTransient", ctx, data));
-
-        //Debugger.Launch();
+        context.RegisterImplementationSourceOutput(scoped, (ctx, data) => AddPartial("AddScoped", ctx, data));
+        context.RegisterImplementationSourceOutput(singleton, (ctx, data) => AddPartial("AddSingleton", ctx, data));
+        context.RegisterImplementationSourceOutput(transient, (ctx, data) => AddPartial("AddTransient", ctx, data));
     }
 
     void AddPartial(string methodName, SourceProductionContext ctx, (ImmutableArray<INamedTypeSymbol> Types, (AnalyzerConfigOptionsProvider Config, Func<ISymbol, bool> IsAccessible) Options) data)
