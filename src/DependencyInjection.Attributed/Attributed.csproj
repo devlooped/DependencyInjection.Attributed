@@ -8,6 +8,7 @@
     <Title>Automatic compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies.</Title>
     <Description>$(Title)</Description>
     <PackFolder>analyzers/dotnet</PackFolder>
+    <IsRoslynComponent>true</IsRoslynComponent>
   </PropertyGroup>
 
   <ItemGroup>
