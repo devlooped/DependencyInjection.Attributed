@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.2.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.2.0) (2022-11-10)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.1.3...v1.2.0)
+
+:twisted_rightwards_arrows: Merged:
+
+- Report warning when using the package without invoking AddServices [\#31](https://github.com/devlooped/DependencyInjection.Attributed/pull/31) (@kzu)
+
 ## [v1.1.3](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.1.3) (2022-10-31)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.1.2...v1.1.3)
