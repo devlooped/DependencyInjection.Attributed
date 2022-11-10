@@ -16,7 +16,7 @@
     <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
     <PackageReference Include="System.Composition.AttributedModel" Version="6.0.0" />
     <PackageReference Include="System.Composition.Hosting" Version="6.0.0" />
-    <PackageReference Include="System.Composition.TypedParts" Version="6.0.0" />
+    <PackageReference Include="System.Composition.TypedParts" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
