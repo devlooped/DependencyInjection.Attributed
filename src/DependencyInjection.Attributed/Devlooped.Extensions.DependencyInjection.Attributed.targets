@@ -8,7 +8,7 @@
 
   <Target Name="_AddDDI_Constant" BeforeTargets="CoreCompile">
     <PropertyGroup>
-      <DefineConstants Condition="'$(Language)' == 'C#' and '$(AddServiceAttribute)' == 'true'">$(DefineConstants);DDI_ADDSERVICE</DefineConstants>
+      <DefineConstants Condition="'$(Language)' == 'C#' and '$(AddServiceAttribute)' == 'true' and !$(DefineConstants.Contains('DDI_ADDSERVICE'))">$(DefineConstants);DDI_ADDSERVICE</DefineConstants>
     </PropertyGroup>
   </Target>
   

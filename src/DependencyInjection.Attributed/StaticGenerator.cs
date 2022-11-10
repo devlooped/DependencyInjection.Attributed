@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 namespace Devlooped.Extensions.DependencyInjection.Attributed;
 
 [Generator(LanguageNames.CSharp)]
-class StaticGenerator : ISourceGenerator
+public class StaticGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {
@@ -53,6 +53,7 @@ class StaticGenerator : ISourceGenerator
 
         context.AddSource("AddServicesExtension.g",
           $$"""
+            using System;
             using System.ComponentModel;
             using Microsoft.Extensions.DependencyInjection;
 
@@ -70,6 +71,7 @@ class StaticGenerator : ISourceGenerator
                     /// </summary>
                     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
                     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+                    [DDIAddServicesAttribute]
                     public static IServiceCollection AddServices(this IServiceCollection services)
                     {
                         AddScopedServices(services);
@@ -93,6 +95,9 @@ class StaticGenerator : ISourceGenerator
                     /// Adds discovered transient services to the collection.
                     /// </summary>
                     static partial void AddTransientServices(IServiceCollection services);
+
+                    [AttributeUsage(AttributeTargets.Method)]
+                    class DDIAddServicesAttribute : Attribute { }
                 }
             }
             """);
