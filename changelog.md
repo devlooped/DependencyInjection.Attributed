@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.2.1](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.2.1) (2022-11-16)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.2.0...v1.2.1)
+
+:sparkles: Implemented enhancements:
+
+- Report warning when using the package without invoking AddServices [\#30](https://github.com/devlooped/DependencyInjection.Attributed/issues/30)
+
+:twisted_rightwards_arrows: Merged:
+
+- Don't consider generated code usage of IServiceCollection to report warning [\#38](https://github.com/devlooped/DependencyInjection.Attributed/pull/38) (@kzu)
+
 ## [v1.2.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.2.0) (2022-11-10)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.1.3...v1.2.0)
