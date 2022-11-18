@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.2.2](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.2.2) (2022-11-18)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.2.1...v1.2.2)
+
+:sparkles: Implemented enhancements:
+
+- Add support for aliased references [\#40](https://github.com/devlooped/DependencyInjection.Attributed/issues/40)
+- Add support for aliased references [\#41](https://github.com/devlooped/DependencyInjection.Attributed/pull/41) (@kzu)
+
+:bug: Fixed bugs:
+
+- Don't consider generated code usage of IServiceCollection to report warning [\#37](https://github.com/devlooped/DependencyInjection.Attributed/issues/37)
+
 ## [v1.2.1](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.2.1) (2022-11-16)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.2.0...v1.2.1)
@@ -102,10 +115,6 @@
 ## [v0.9.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v0.9.0) (2022-09-23)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/e33ea020586537ad367d7e28fa6503c2f034bf27...v0.9.0)
-
-:twisted_rightwards_arrows: Merged:
-
-- +Mᐁ includes [\#5](https://github.com/devlooped/DependencyInjection.Attributed/pull/5) (@devlooped-bot)
 
 
 
