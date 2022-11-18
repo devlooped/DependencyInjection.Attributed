@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <CompilerVisibleProperty Include="AddServiceAttribute" />
     <CompilerVisibleProperty Include="AddServicesNamespace" />
     <CompilerVisibleProperty Include="AddServicesClassName" />
   </ItemGroup>
