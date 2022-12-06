@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.3.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.3.0) (2022-12-06)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.2.2...v1.3.0)
+
+:sparkles: Implemented enhancements:
+
+- Make development dependency [\#43](https://github.com/devlooped/DependencyInjection.Attributed/issues/43)
+
+:hammer: Other:
+
+- Never report warning for missing AddServices\(\) in test projects [\#47](https://github.com/devlooped/DependencyInjection.Attributed/issues/47)
+
+:twisted_rightwards_arrows: Merged:
+
+- Don't report warning for missing AddServices\(\) in test projects [\#48](https://github.com/devlooped/DependencyInjection.Attributed/pull/48) (@kzu)
+
 ## [v1.2.2](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.2.2) (2022-11-18)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.2.1...v1.2.2)
