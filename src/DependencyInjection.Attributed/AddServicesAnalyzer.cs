@@ -78,6 +78,12 @@ public class AddServicesAnalyzer : DiagnosticAnalyzer
 
             startContext.RegisterCompilationEndAction(endContext =>
             {
+                var isTest = endContext.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue("build_property.IsTestProject", out var value) &&
+                    bool.TryParse(value, out var isTestProject) && isTestProject;
+
+                if (isTest)
+                    return;
+
                 if (usesServiceCollection && !usesAddServices)
                     endContext.ReportDiagnostic(Diagnostic.Create(NoAddServicesCall, location));
             });
