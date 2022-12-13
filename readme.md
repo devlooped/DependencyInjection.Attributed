@@ -112,6 +112,40 @@ services.AddScoped(s => new MyService(s.GetRequiredService<IMyDependency>(), ...
 
 ## Advanced Scenarios
 
+### `Lazy<T>` and `Func<T>` Dependencies
+
+A `Lazy<T>` for each interface (and main implementation) is automatically provided 
+too, so you can take a lazy dependency out of the box too. In this case, the lifetime 
+of the dependency `T` becomes tied to the lifetime of the component taking the lazy 
+dependency, for obvious reasons. The `Lazy<T>` is merely a lazy resolving of the 
+dependency via the service provider. The lazy itself isn't costly to construct, and 
+since the lifetime of the underlying service, plus the lifetime of the consuming 
+service determine the ultimate lifetime of the lazy, no additional configuration is 
+necessary for it, as it's always registered as a transient component. Generated code 
+looks like the following:
+
+```csharp
+services.AddTransient(s => new Lazy<IMyService>(s.GetRequiredService<MyService>));
+```
+
+A `Func<T>` is also automatically registered, but it is just a delegate to the 
+actual `IServiceProvider.GetRequiredService<T>`. Generated code looks like the 
+following:
+
+
+```csharp
+services.AddTransient<Func<IMyService>>(s => s.GetRequiredService<MyService>);
+```
+
+Repeatedly invoking the function will result in an instance of the required 
+service that depends on the registered lifetime for it. If it was registered 
+as a singleton, for example, you would get the same value every time, just 
+as if you had used a dependency of `Lazy<T>` instead, but invoking the 
+service provider each time, instead of only once. This makes this pattern 
+more useful for transient services that you intend to use for a short time 
+(and potentially dispose afterwards).
+
+
 ### Your Own ServiceAttribute
 
 If you want to declare your own `ServiceAttribute` and reuse from your projects, 
