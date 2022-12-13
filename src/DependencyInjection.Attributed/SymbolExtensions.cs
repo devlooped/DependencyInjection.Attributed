@@ -19,6 +19,19 @@ static class SymbolExtensions
         genericsOptions: SymbolDisplayGenericsOptions.None,
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.ExpandNullable);
 
+    public static bool IsSymbolAccessible(this Compilation compilation, ISymbol symbol)
+    {
+        try
+        {
+            // Unfortunately, wrong assembly symbol throws instead of returning false :(
+            // See https://github.com/dotnet/roslyn/blob/9fef96ff1194f686993293c7971802216eb75a26/src/Compilers/Core/Portable/Compilation/Compilation.cs#L1626
+            return compilation.IsSymbolAccessibleWithin(symbol, compilation.Assembly);
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     public static string ToAssemblyNamespace(this INamespaceSymbol symbol)
         => symbol.ContainingAssembly.Name + "." + symbol.ToDisplayString(fullNameFormat);

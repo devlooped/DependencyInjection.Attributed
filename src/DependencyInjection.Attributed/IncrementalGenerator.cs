@@ -20,7 +20,7 @@ public class IncrementalGenerator : IIncrementalGenerator
     {
         var types = context.CompilationProvider.SelectMany((x, c) =>
         {
-            var visitor = new TypesVisitor(s => x.IsSymbolAccessibleWithin(s, x.Assembly), c);
+            var visitor = new TypesVisitor(s => x.IsSymbolAccessible(s), c);
             x.GlobalNamespace.Accept(visitor);
             // Also visit aliased references, which will not become part of the global:: namespace
             foreach (var symbol in x.References
@@ -149,7 +149,7 @@ public class IncrementalGenerator : IIncrementalGenerator
 
     void AddServices(ImmutableArray<INamedTypeSymbol> types, Compilation compilation, string methodName, StringBuilder output)
     {
-        bool isAccessible(ISymbol s) => compilation.IsSymbolAccessibleWithin(s, compilation.Assembly);
+        bool isAccessible(ISymbol s) => compilation.IsSymbolAccessible(s);
 
         foreach (var type in types)
         {
