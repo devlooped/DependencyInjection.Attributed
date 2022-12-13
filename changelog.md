@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.3.1](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.3.1) (2022-12-13)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.3.0...v1.3.1)
+
+:sparkles: Implemented enhancements:
+
+- Add Func\<T\> and Lazy\<T\> registrations [\#50](https://github.com/devlooped/DependencyInjection.Attributed/pull/50) (@kzu)
+
 ## [v1.3.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.3.0) (2022-12-06)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.2.2...v1.3.0)
