@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,12 @@ public record GenerationTests(ITestOutputHelper Output)
         var instance = services.GetRequiredService<SingletonService>();
 
         Assert.Same(instance, services.GetRequiredService<SingletonService>());
+        Assert.Same(instance, services.GetRequiredService<Func<SingletonService>>().Invoke());
+        Assert.Same(instance, services.GetRequiredService<Lazy<SingletonService>>().Value);
+
         Assert.Same(instance, services.GetRequiredService<IFormattable>());
+        Assert.Same(instance, services.GetRequiredService<Func<IFormattable>>().Invoke());
+        Assert.Same(instance, services.GetRequiredService<Lazy<IFormattable>>().Value);
     }
 
     [Fact]
@@ -31,7 +37,12 @@ public record GenerationTests(ITestOutputHelper Output)
         var instance = services.GetRequiredService<TransientService>();
 
         Assert.NotSame(instance, services.GetRequiredService<TransientService>());
+        Assert.NotSame(instance, services.GetRequiredService<Func<TransientService>>().Invoke());
+        Assert.NotSame(instance, services.GetRequiredService<Lazy<TransientService>>().Value);
+
         Assert.NotSame(instance, services.GetRequiredService<ICloneable>());
+        Assert.NotSame(instance, services.GetRequiredService<Func<ICloneable>>().Invoke());
+        Assert.NotSame(instance, services.GetRequiredService<Lazy<ICloneable>>().Value);
     }
 
     [Fact]
@@ -47,10 +58,17 @@ public record GenerationTests(ITestOutputHelper Output)
 
         // Within the scope, we get the same instance
         Assert.Same(instance, scope.ServiceProvider.GetRequiredService<ScopedService>());
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredService<Func<ScopedService>>().Invoke());
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredService<Lazy<ScopedService>>().Value);
+
         Assert.Same(instance, scope.ServiceProvider.GetRequiredService<IComparable>());
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredService<Func<IComparable>>().Invoke());
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredService<Lazy<IComparable>>().Value);
 
         // Outside the scope, we don't
         Assert.NotSame(instance, services.GetRequiredService<IComparable>());
+        Assert.NotSame(instance, services.GetRequiredService<Func<IComparable>>().Invoke());
+        Assert.NotSame(instance, services.GetRequiredService<Lazy<IComparable>>().Value);
     }
 
     [Fact]

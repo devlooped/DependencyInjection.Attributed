@@ -125,6 +125,7 @@ public class IncrementalGenerator : IIncrementalGenerator
         builder.AppendLine(
           $$"""
             using Microsoft.Extensions.DependencyInjection;
+            using System;
             
             namespace {{rootNs}}
             {
@@ -175,12 +176,17 @@ public class IncrementalGenerator : IIncrementalGenerator
                 output.AppendLine($"            services.{methodName}(s => new {impl}());");
             }
 
+            output.AppendLine($"            services.AddTransient<Func<{impl}>>(s => s.GetRequiredService<{impl}>);");
+            output.AppendLine($"            services.AddTransient(s => new Lazy<{impl}>(s.GetRequiredService<{impl}>));");
+
             foreach (var iface in type.AllInterfaces)
             {
                 var ifaceName = iface.ToFullName(compilation);
                 if (!registered.Contains(ifaceName))
                 {
                     output.AppendLine($"            services.{methodName}<{ifaceName}>(s => s.GetRequiredService<{impl}>());");
+                    output.AppendLine($"            services.AddTransient<Func<{ifaceName}>>(s => s.GetRequiredService<{ifaceName}>);");
+                    output.AppendLine($"            services.AddTransient(s => new Lazy<{ifaceName}>(s.GetRequiredService<{ifaceName}>));");
                     registered.Add(ifaceName);
                 }
 
@@ -207,6 +213,8 @@ public class IncrementalGenerator : IIncrementalGenerator
                         if (!registered.Contains(candidate))
                         {
                             output.AppendLine($"            services.{methodName}<{candidate}>(s => s.GetRequiredService<{impl}>());");
+                            output.AppendLine($"            services.AddTransient<Func<{candidate}>>(s => s.GetRequiredService<{candidate}>);");
+                            output.AppendLine($"            services.AddTransient(s => new Lazy<{candidate}>(s.GetRequiredService<{candidate}>));");
                             registered.Add(candidate);
                         }
                     }
