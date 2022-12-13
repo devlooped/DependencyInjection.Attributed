@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.3.2](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.3.2) (2022-12-13)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.3.1...v1.3.2)
+
+:sparkles: Implemented enhancements:
+
+- When registering services, also register Func\<T\> and Lazy\<T\> for services [\#49](https://github.com/devlooped/DependencyInjection.Attributed/issues/49)
+
+:bug: Fixed bugs:
+
+- Generator shouldn't fail for unsuccessful compilation [\#52](https://github.com/devlooped/DependencyInjection.Attributed/pull/52) (@kzu)
+
 ## [v1.3.1](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.3.1) (2022-12-13)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.3.0...v1.3.1)
@@ -15,14 +27,11 @@
 :sparkles: Implemented enhancements:
 
 - Make development dependency [\#43](https://github.com/devlooped/DependencyInjection.Attributed/issues/43)
+- Don't report warning for missing AddServices\(\) in test projects [\#48](https://github.com/devlooped/DependencyInjection.Attributed/pull/48) (@kzu)
 
 :hammer: Other:
 
 - Never report warning for missing AddServices\(\) in test projects [\#47](https://github.com/devlooped/DependencyInjection.Attributed/issues/47)
-
-:twisted_rightwards_arrows: Merged:
-
-- Don't report warning for missing AddServices\(\) in test projects [\#48](https://github.com/devlooped/DependencyInjection.Attributed/pull/48) (@kzu)
 
 ## [v1.2.2](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.2.2) (2022-11-18)
 
