@@ -63,20 +63,6 @@ And that's it. The source generator will discover annotated types in the current
 project and all its references too. Since the registration code is generated at 
 compile-time, there is no run-time reflection (or dependencies) whatsoever.
 
-## MEF Compatibility
-
-Given the (more or less broad?) adoption of 
-[MEF attribute](https://learn.microsoft.com/en-us/dotnet/framework/mef/attributed-programming-model-overview-mef)
-(whether [.NET MEF, NuGet MEF or VS MEF](https://github.com/microsoft/vs-mef/blob/main/doc/mef_library_differences.md)) in .NET, 
-the generator also supports the `[Export]` attribute to denote a service (the 
-type argument as well as contract name are ignored, since those aren't supported 
-in the DI container). 
-
-In order to specify a singleton (shared) instance in MEF, you have to annotate the 
-type with an extra attribute: `[Shared]` in NuGet MEF (from [System.Composition](http://nuget.org/packages/System.Composition.AttributedModel)) 
-or `[PartCreationPolicy(CreationPolicy.Shared)]` in .NET MEF 
-(from [System.ComponentModel.Composition](https://www.nuget.org/packages/System.ComponentModel.Composition)).
-
 ## How It Works
 
 The generated code that implements the registration looks like the following:
@@ -108,6 +94,20 @@ provider by the implementation factory too, like:
 ```csharp
 services.AddScoped(s => new MyService(s.GetRequiredService<IMyDependency>(), ...));
 ```
+
+## MEF Compatibility
+
+Given the (more or less broad?) adoption of 
+[MEF attribute](https://learn.microsoft.com/en-us/dotnet/framework/mef/attributed-programming-model-overview-mef)
+(whether [.NET MEF, NuGet MEF or VS MEF](https://github.com/microsoft/vs-mef/blob/main/doc/mef_library_differences.md)) in .NET, 
+the generator also supports the `[Export]` attribute to denote a service (the 
+type argument as well as contract name are ignored, since those aren't supported 
+in the DI container). 
+
+In order to specify a singleton (shared) instance in MEF, you have to annotate the 
+type with an extra attribute: `[Shared]` in NuGet MEF (from [System.Composition](http://nuget.org/packages/System.Composition.AttributedModel)) 
+or `[PartCreationPolicy(CreationPolicy.Shared)]` in .NET MEF 
+(from [System.ComponentModel.Composition](https://www.nuget.org/packages/System.ComponentModel.Composition)).
 
 
 ## Advanced Scenarios
