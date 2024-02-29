@@ -1,5 +1,18 @@
 # Changelog
 
+## [v2.0.0](https://github.com/devlooped/DependencyInjection.Attributed/tree/v2.0.0) (2024-02-29)
+
+[Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.3.2...v2.0.0)
+
+:sparkles: Implemented enhancements:
+
+- Add support for new keyed service in .NET8 [\#73](https://github.com/devlooped/DependencyInjection.Attributed/issues/73)
+- Add support for new keyed services in .NET8 [\#90](https://github.com/devlooped/DependencyInjection.Attributed/pull/90) (@kzu)
+
+:bug: Fixed bugs:
+
+- If compilation isn't successful, incremental generator fails [\#51](https://github.com/devlooped/DependencyInjection.Attributed/issues/51)
+
 ## [v1.3.2](https://github.com/devlooped/DependencyInjection.Attributed/tree/v1.3.2) (2022-12-13)
 
 [Full Changelog](https://github.com/devlooped/DependencyInjection.Attributed/compare/v1.3.1...v1.3.2)
