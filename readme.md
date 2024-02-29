@@ -63,6 +63,45 @@ And that's it. The source generator will discover annotated types in the current
 project and all its references too. Since the registration code is generated at 
 compile-time, there is no run-time reflection (or dependencies) whatsoever.
 
+### Keyed Services
+
+[Keyed services](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-8.0#keyed-services) 
+are also supported by a separate generic `[Service]` attribute, like:
+
+```csharp
+public interface INotificationService
+{
+    string Notify(string message);
+}
+
+[Service<string>("sms")]
+public class SmsNotificationService : INotificationService
+{
+    public string Notify(string message) => $"[SMS] {message}";
+}
+
+[Service<string>("email")]
+public class EmailNotificationService : INotificationService
+{
+    public string Notify(string message) => $"[Email] {message}";
+}
+```
+
+Services that want to consume a specific keyed service can use the 
+`[FromKeyedServices(object key)]` attribute to specify the key, like:
+
+```csharp
+[Service]
+public class SmsService([FromKeyedServices("sms")] INotificationService sms)
+{
+    public void DoSomething() => sms.Notify("Hello");
+}
+```
+
+In this case, when resolving the `SmsService` from the service provider, the 
+right `INotificationService` will be injected, based on the key provided.
+
+
 ## How It Works
 
 The generated code that implements the registration looks like the following:
@@ -109,6 +148,10 @@ type with an extra attribute: `[Shared]` in NuGet MEF (from [System.Composition]
 or `[PartCreationPolicy(CreationPolicy.Shared)]` in .NET MEF 
 (from [System.ComponentModel.Composition](https://www.nuget.org/packages/System.ComponentModel.Composition)).
 
+Both `[Export("contractName")]` and `[Import("contractName")]` are supported and 
+will be used to register and resolve keyed services respectively, meaning you can 
+typically depend on just `[Export]` and `[Import]` attributes for all your DI 
+annotations and have them work automatically when composed in the DI container.
 
 ## Advanced Scenarios
 
@@ -149,8 +192,8 @@ more useful for transient services that you intend to use for a short time
 ### Your Own ServiceAttribute
 
 If you want to declare your own `ServiceAttribute` and reuse from your projects, 
-so as to avoid taking a (compile-time) dependency on this package from your library 
-projects, you can just declare it like so:
+so as to avoid taking a (development-only, compile-time only) dependency on this 
+package from your library projects, you can just declare it like so:
 
 ```csharp
 [AttributeUsage(AttributeTargets.Class)]
@@ -160,8 +203,18 @@ public class ServiceAttribute : Attribute
 }
 ```
 
-> NOTE: since the constructor argument is only used by the source generation to 
-> detemine the registration style, but never at run-time, you don't even need 
+Likewise for the keyed service version:
+
+```csharp
+[AttributeUsage(AttributeTargets.Class)]
+public class ServiceAttribute<TKey> : Attribute
+{
+    public ServiceAttribute(TKey key, ServiceLifetime lifetime = ServiceLifetime.Singleton) { }
+}
+```
+
+> NOTE: since the constructor arguments are only used by the source generation to 
+> detemine the registration style (and key), but never at run-time, you don't even need 
 > to keep it around in a field or property!
 
 With this in place, you only need to add this package to the top-level project 
