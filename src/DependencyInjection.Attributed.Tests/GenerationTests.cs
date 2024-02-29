@@ -1,6 +1,6 @@
 ﻿using System;
+using System.ComponentModel.Composition;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,6 +69,110 @@ public record GenerationTests(ITestOutputHelper Output)
         Assert.NotSame(instance, services.GetRequiredService<IComparable>());
         Assert.NotSame(instance, services.GetRequiredService<Func<IComparable>>().Invoke());
         Assert.NotSame(instance, services.GetRequiredService<Lazy<IComparable>>().Value);
+    }
+
+    [Fact]
+    public void RegisterKeyedSingletonService()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        var instance = services.GetRequiredKeyedService<KeyedSingletonService>(42);
+
+        Assert.Same(instance, services.GetRequiredKeyedService<KeyedSingletonService>(42));
+        Assert.Same(instance, services.GetRequiredKeyedService<Func<KeyedSingletonService>>(42).Invoke());
+        Assert.Same(instance, services.GetRequiredKeyedService<Lazy<KeyedSingletonService>>(42).Value);
+
+        Assert.Same(instance, services.GetRequiredKeyedService<IFormattable>(42));
+        Assert.Same(instance, services.GetRequiredKeyedService<Func<IFormattable>>(42).Invoke());
+        Assert.Same(instance, services.GetRequiredKeyedService<Lazy<IFormattable>>(42).Value);
+    }
+
+    [Fact]
+    public void RegisterKeyedTransientService()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        var instance = services.GetRequiredKeyedService<KeyedTransientService>(PlatformID.Win32NT);
+
+        Assert.NotSame(instance, services.GetRequiredKeyedService<KeyedTransientService>(PlatformID.Win32NT));
+        Assert.NotSame(instance, services.GetRequiredKeyedService<Func<KeyedTransientService>>(PlatformID.Win32NT).Invoke());
+        Assert.NotSame(instance, services.GetRequiredKeyedService<Lazy<KeyedTransientService>>(PlatformID.Win32NT).Value);
+
+        Assert.NotSame(instance, services.GetRequiredKeyedService<ICloneable>(PlatformID.Win32NT));
+        Assert.NotSame(instance, services.GetRequiredKeyedService<Func<ICloneable>>(PlatformID.Win32NT).Invoke());
+        Assert.NotSame(instance, services.GetRequiredKeyedService<Lazy<ICloneable>>(PlatformID.Win32NT).Value);
+    }
+
+    [Fact]
+    public void RegisterKeyedScopedService()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        using var scope = services.CreateScope();
+
+        var instance = scope.ServiceProvider.GetRequiredKeyedService<KeyedScopedService>("A");
+
+        // Within the scope, we get the same instance
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredKeyedService<KeyedScopedService>("A"));
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredKeyedService<Func<KeyedScopedService>>("A").Invoke());
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredKeyedService<Lazy<KeyedScopedService>>("A").Value);
+
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredKeyedService<IComparable>("A"));
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredKeyedService<Func<IComparable>>("A").Invoke());
+        Assert.Same(instance, scope.ServiceProvider.GetRequiredKeyedService<Lazy<IComparable>>("A").Value);
+
+        // Outside the scope, we don't
+        Assert.NotSame(instance, services.GetRequiredKeyedService<IComparable>("A"));
+        Assert.NotSame(instance, services.GetRequiredKeyedService<Func<IComparable>>("A").Invoke());
+        Assert.NotSame(instance, services.GetRequiredKeyedService<Lazy<IComparable>>("A").Value);
+    }
+
+    [Fact]
+    public void ResolvesKeyedDependency()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        var singleton = services.GetRequiredKeyedService<KeyedSingletonService>(42);
+
+        using var scope = services.CreateScope();
+
+        var instance = scope.ServiceProvider.GetRequiredKeyedService<FromKeyedDependency>("FromKeyed");
+
+        // Within the scope, we get the same instance
+        Assert.Same(singleton, instance.Dependency);
+    }
+
+
+    [Fact]
+    public void ResolvesKeyedDependencyForNonKeyed()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        var singleton = services.GetRequiredService<NonKeyedWithKeyedDependency>();
+
+        Assert.NotNull(singleton.Dependency);
+    }
+
+    [Fact]
+    public void ResolvesKeyedFromContracts()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        var singleton = services.GetRequiredKeyedService<DependencyFromKeyedContract>("service");
+
+        Assert.NotNull(singleton.Dependency);
     }
 
     [Fact]
@@ -171,4 +275,43 @@ public class MyEvent : BaseEvent { }
 public class ObservableService : IObservable<MyEvent>
 {
     public IDisposable Subscribe(IObserver<MyEvent> observer) => throw new NotImplementedException();
+}
+
+[Service<int>(42, ServiceLifetime.Singleton)]
+public class KeyedSingletonService : IFormattable
+{
+    public string ToString(string? format, IFormatProvider? formatProvider) => throw new NotImplementedException();
+}
+
+[Service<PlatformID>(PlatformID.Win32NT, ServiceLifetime.Transient)]
+public class KeyedTransientService : ICloneable
+{
+    public object Clone() => throw new NotImplementedException();
+}
+
+[Service<string>("A", ServiceLifetime.Scoped)]
+public class KeyedScopedService : IComparable
+{
+    public int CompareTo(object? obj) => throw new NotImplementedException();
+}
+
+[Service<string>("FromKeyed", ServiceLifetime.Scoped)]
+public class FromKeyedDependency([FromKeyedServices(42)] IFormattable dependency)
+{
+    public IFormattable Dependency => dependency;
+}
+
+[Service]
+public class NonKeyedWithKeyedDependency([FromKeyedServices(PlatformID.Win32NT)] ICloneable dependency)
+{
+    public ICloneable Dependency => dependency;
+}
+
+[Export("contract")]
+public class KeyedByContractName { }
+
+[Export("service")]
+public class DependencyFromKeyedContract([Import("contract")] KeyedByContractName dependency)
+{
+    public KeyedByContractName Dependency => dependency;
 }

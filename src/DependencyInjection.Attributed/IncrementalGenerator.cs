@@ -5,7 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using KeyedService = (Microsoft.CodeAnalysis.INamedTypeSymbol Type, Microsoft.CodeAnalysis.TypedConstant? Key);
 
 namespace Devlooped.Extensions.DependencyInjection.Attributed;
 
@@ -39,6 +41,13 @@ public class IncrementalGenerator : IIncrementalGenerator
             attr.ConstructorArguments[0].Kind == TypedConstantKind.Enum &&
             attr.ConstructorArguments[0].Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::Microsoft.Extensions.DependencyInjection.ServiceLifetime";
 
+        bool IsKeyedService(AttributeData attr) =>
+            (attr.AttributeClass?.Name == "ServiceAttribute" || attr.AttributeClass?.Name == "Service") &&
+            attr.AttributeClass?.IsGenericType == true &&
+            attr.ConstructorArguments.Length == 2 &&
+            attr.ConstructorArguments[1].Kind == TypedConstantKind.Enum &&
+            attr.ConstructorArguments[1].Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::Microsoft.Extensions.DependencyInjection.ServiceLifetime";
+
         bool IsExport(AttributeData attr)
         {
             var attrName = attr.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
@@ -53,17 +62,27 @@ public class IncrementalGenerator : IIncrementalGenerator
             {
                 var name = x.Name;
                 var attrs = x.GetAttributes();
-                var serviceAttr = attrs.FirstOrDefault(IsService);
+                var serviceAttr = attrs.FirstOrDefault(IsService) ?? attrs.FirstOrDefault(IsKeyedService);
                 var service = serviceAttr != null || attrs.Any(IsExport);
 
                 if (!service)
                     return null;
 
+                TypedConstant? key = default;
+
                 // Default lifetime is singleton for [Service], Transient for MEF
                 var lifetime = serviceAttr != null ? 0 : 2;
                 if (serviceAttr != null)
                 {
-                    lifetime = (int)serviceAttr.ConstructorArguments[0].Value!;
+                    if (IsKeyedService(serviceAttr))
+                    {
+                        key = serviceAttr.ConstructorArguments[0];
+                        lifetime = (int)serviceAttr.ConstructorArguments[1].Value!;
+                    }
+                    else
+                    {
+                        lifetime = (int)serviceAttr.ConstructorArguments[0].Value!;
+                    }
                 }
                 else
                 {
@@ -82,11 +101,20 @@ public class IncrementalGenerator : IIncrementalGenerator
                     {
                         lifetime = 0;
                     }
+
+                    // Consider the [Export(contractName)] as a keyed service with the contract name as the key.
+                    if (attrs.FirstOrDefault(IsExport) is { } export &&
+                        export.ConstructorArguments.Length > 0 &&
+                        export.ConstructorArguments[0].Kind == TypedConstantKind.Primitive)
+                    {
+                        key = export.ConstructorArguments[0];
+                    }
                 }
 
                 return new
                 {
                     Type = x,
+                    Key = key,
                     Lifetime = lifetime
                 };
             })
@@ -96,16 +124,33 @@ public class IncrementalGenerator : IIncrementalGenerator
 
         // Only requisite is that we define Scoped = 0, Singleton = 1 and Transient = 2.
         // This matches https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicelifetime?view=dotnet-plat-ext-6.0#fields
-        var singleton = services.Where(x => x!.Lifetime == 0).Select((x, _) => x!.Type).Collect().Combine(options);
-        var scoped = services.Where(x => x!.Lifetime == 1).Select((x, _) => x!.Type).Collect().Combine(options);
-        var transient = services.Where(x => x!.Lifetime == 2).Select((x, _) => x!.Type).Collect().Combine(options);
 
-        context.RegisterImplementationSourceOutput(scoped, (ctx, data) => AddPartial("AddScoped", ctx, data));
-        context.RegisterImplementationSourceOutput(singleton, (ctx, data) => AddPartial("AddSingleton", ctx, data));
-        context.RegisterImplementationSourceOutput(transient, (ctx, data) => AddPartial("AddTransient", ctx, data));
+        context.RegisterImplementationSourceOutput(
+            services.Where(x => x!.Lifetime == 0 && x.Key is null).Select((x, _) => new KeyedService(x!.Type, x.Key!)).Collect().Combine(options),
+            (ctx, data) => AddPartial("AddSingleton", ctx, data));
+
+        context.RegisterImplementationSourceOutput(
+            services.Where(x => x!.Lifetime == 1 && x.Key is null).Select((x, _) => new KeyedService(x!.Type, x.Key!)).Collect().Combine(options),
+            (ctx, data) => AddPartial("AddScoped", ctx, data));
+
+        context.RegisterImplementationSourceOutput(
+            services.Where(x => x!.Lifetime == 2 && x.Key is null).Select((x, _) => new KeyedService(x!.Type, x.Key!)).Collect().Combine(options),
+            (ctx, data) => AddPartial("AddTransient", ctx, data));
+
+        context.RegisterImplementationSourceOutput(
+            services.Where(x => x!.Lifetime == 0 && x.Key is not null).Select((x, _) => new KeyedService(x!.Type, x.Key!)).Collect().Combine(options),
+            (ctx, data) => AddPartial("AddKeyedSingleton", ctx, data));
+
+        context.RegisterImplementationSourceOutput(
+            services.Where(x => x!.Lifetime == 1 && x.Key is not null).Select((x, _) => new KeyedService(x!.Type, x.Key!)).Collect().Combine(options),
+            (ctx, data) => AddPartial("AddKeyedScoped", ctx, data));
+
+        context.RegisterImplementationSourceOutput(
+            services.Where(x => x!.Lifetime == 2 && x.Key is not null).Select((x, _) => new KeyedService(x!.Type, x.Key!)).Collect().Combine(options),
+            (ctx, data) => AddPartial("AddKeyedTransient", ctx, data));
     }
 
-    void AddPartial(string methodName, SourceProductionContext ctx, (ImmutableArray<INamedTypeSymbol> Types, (AnalyzerConfigOptionsProvider Config, Compilation Compilation) Options) data)
+    void AddPartial(string methodName, SourceProductionContext ctx, (ImmutableArray<KeyedService> Types, (AnalyzerConfigOptionsProvider Config, Compilation Compilation) Options) data)
     {
         var builder = new StringBuilder()
             .AppendLine("// <auto-generated />");
@@ -135,7 +180,8 @@ public class IncrementalGenerator : IIncrementalGenerator
                     {
             """);
 
-        AddServices(data.Types, data.Options.Compilation, methodName, builder);
+        AddServices(data.Types.Where(x => x.Key is null).Select(x => x.Type), data.Options.Compilation, methodName, builder);
+        AddKeyedServices(data.Types.Where(x => x.Key is not null), data.Options.Compilation, methodName, builder);
 
         builder.AppendLine(
         """
@@ -147,11 +193,11 @@ public class IncrementalGenerator : IIncrementalGenerator
         ctx.AddSource(methodName + ".g", builder.ToString().Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
     }
 
-    void AddServices(ImmutableArray<INamedTypeSymbol> types, Compilation compilation, string methodName, StringBuilder output)
+    void AddServices(IEnumerable<INamedTypeSymbol> services, Compilation compilation, string methodName, StringBuilder output)
     {
         bool isAccessible(ISymbol s) => compilation.IsSymbolAccessible(s);
 
-        foreach (var type in types)
+        foreach (var type in services)
         {
             var impl = type.ToFullName(compilation);
             var registered = new HashSet<string>();
@@ -168,7 +214,14 @@ public class IncrementalGenerator : IIncrementalGenerator
 
             if (ctor != null && ctor.Parameters.Length > 0)
             {
-                var args = string.Join(", ", ctor.Parameters.Select(p => $"s.GetRequiredService<{p.Type.ToFullName(compilation)}>()"));
+                var args = string.Join(", ", ctor.Parameters.Select(p =>
+                {
+                    var fromKeyed = p.GetAttributes().FirstOrDefault(IsFromKeyed);
+                    if (fromKeyed is not null)
+                        return $"s.GetRequiredKeyedService<{p.Type.ToFullName(compilation)}>({fromKeyed.ConstructorArguments[0].ToCSharpString()})";
+
+                    return $"s.GetRequiredService<{p.Type.ToFullName(compilation)}>()";
+                }));
                 output.AppendLine($"            services.{methodName}(s => new {impl}({args}));");
             }
             else
@@ -222,6 +275,100 @@ public class IncrementalGenerator : IIncrementalGenerator
             }
         }
     }
+
+    void AddKeyedServices(IEnumerable<KeyedService> services, Compilation compilation, string methodName, StringBuilder output)
+    {
+        bool isAccessible(ISymbol s) => compilation.IsSymbolAccessible(s);
+
+        foreach (var type in services)
+        {
+            var impl = type.Type.ToFullName(compilation);
+            var registered = new HashSet<string>();
+            var key = type.Key!.Value.ToCSharpString();
+
+            var importing = type.Type.InstanceConstructors.FirstOrDefault(m =>
+                m.GetAttributes().Any(a =>
+                    a.AttributeClass?.ToFullName(compilation) == "global::System.Composition.ImportingConstructorAttribute" ||
+                    a.AttributeClass?.ToFullName(compilation) == "global::System.ComponentModel.Composition.ImportingConstructorAttribute"));
+
+            var ctor = importing ?? type.Type.InstanceConstructors
+                .Where(isAccessible)
+                .OrderByDescending(m => m.Parameters.Length)
+                .FirstOrDefault();
+
+            if (ctor != null && ctor.Parameters.Length > 0)
+            {
+                var args = string.Join(", ", ctor.Parameters.Select(p =>
+                {
+                    var fromKeyed = p.GetAttributes().FirstOrDefault(IsFromKeyed);
+                    if (fromKeyed is not null)
+                        return $"s.GetRequiredKeyedService<{p.Type.ToFullName(compilation)}>({fromKeyed.ConstructorArguments[0].ToCSharpString()})";
+
+                    return $"s.GetRequiredService<{p.Type.ToFullName(compilation)}>()";
+                }));
+                output.AppendLine($"            services.{methodName}({key}, (s, k) => new {impl}({args}));");
+            }
+            else
+            {
+                output.AppendLine($"            services.{methodName}({key}, (s, k) => new {impl}());");
+            }
+
+            output.AppendLine($"            services.AddKeyedTransient<Func<{impl}>>({key}, (s, k) => () => s.GetRequiredKeyedService<{impl}>(k));");
+            output.AppendLine($"            services.AddKeyedTransient({key}, (s, k) => new Lazy<{impl}>(s.GetRequiredKeyedService<{impl}>(k)));");
+
+            foreach (var iface in type.Type.AllInterfaces)
+            {
+                var ifaceName = iface.ToFullName(compilation);
+                if (!registered.Contains(ifaceName))
+                {
+                    output.AppendLine($"            services.{methodName}<{ifaceName}>({key}, (s, k) => s.GetRequiredKeyedService<{impl}>(k));");
+                    output.AppendLine($"            services.AddKeyedTransient<Func<{ifaceName}>>({key}, (s, k) => () => s.GetRequiredKeyedService<{ifaceName}>(k));");
+                    output.AppendLine($"            services.AddKeyedTransient({key}, (s, k) => new Lazy<{ifaceName}>(s.GetRequiredKeyedService<{ifaceName}>(k)));");
+                    registered.Add(ifaceName);
+                }
+
+                // Register covariant interfaces too, for at most one type parameter.
+                // TODO: perhaps explore registering for the full permutation of all out params?
+                if (iface.IsGenericType &&
+                    iface.TypeParameters.Length == 1 &&
+                    iface.TypeParameters[0].Variance == VarianceKind.Out)
+                {
+                    var typeParam = iface.TypeArguments[0];
+                    var candidates = typeParam.AllInterfaces.ToList();
+                    var baseType = typeParam.BaseType;
+                    while (baseType != null && baseType.SpecialType != SpecialType.System_Object)
+                    {
+                        candidates.Add(baseType);
+                        baseType = baseType.BaseType;
+                    }
+
+                    foreach (var candidate in candidates.Select(x => iface.ConstructedFrom.Construct(x))
+                        .ToImmutableHashSet(SymbolEqualityComparer.Default)
+                        .Where(x => x != null)
+                        .Select(x => x!.ToFullName(compilation)))
+                    {
+                        if (!registered.Contains(candidate))
+                        {
+                            output.AppendLine($"            services.{methodName}<{candidate}>({key}, (s, k) => s.GetRequiredKeyedService<{impl}>(k));");
+                            output.AppendLine($"            services.AddKeyedTransient<Func<{candidate}>>({key}, (s, k) => () => s.GetRequiredKeyedService<{candidate}>(k));");
+                            output.AppendLine($"            services.AddKeyedTransient({key}, (s, k) => new Lazy<{candidate}>(k, s.GetRequiredKeyedService<{candidate}>(k)));");
+                            registered.Add(candidate);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bool IsFromKeyed(AttributeData attr)
+    {
+        var attrName = attr.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        return attrName == "global::Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute" ||
+            (attrName == "global::System.ComponentModel.Composition.ImportAttribute" &&
+             // In this case, the Import attribute ctor can only have a primitive string value, not enum.
+             attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Kind == TypedConstantKind.Primitive);
+    }
+
 
     class TypesVisitor : SymbolVisitor
     {
