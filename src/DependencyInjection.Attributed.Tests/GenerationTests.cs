@@ -150,6 +150,21 @@ public record GenerationTests(ITestOutputHelper Output)
         Assert.Same(singleton, instance.Dependency);
     }
 
+    [Fact]
+    public void ResolvesKeyedTransientDependency()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        using var scope = services.CreateScope();
+
+        var first = scope.ServiceProvider.GetRequiredKeyedService<FromTransientKeyedDependency>("FromKeyedTransient");
+        var second = scope.ServiceProvider.GetRequiredKeyedService<FromTransientKeyedDependency>("FromKeyedTransient");
+
+        // Within the scope, we get the same instance
+        Assert.NotSame(first, second);
+    }
 
     [Fact]
     public void ResolvesKeyedDependencyForNonKeyed()
@@ -297,6 +312,12 @@ public class KeyedScopedService : IComparable
 
 [Service<string>("FromKeyed", ServiceLifetime.Scoped)]
 public class FromKeyedDependency([FromKeyedServices(42)] IFormattable dependency)
+{
+    public IFormattable Dependency => dependency;
+}
+
+[Service<string>("FromKeyedTransient", ServiceLifetime.Transient)]
+public class FromTransientKeyedDependency([FromKeyedServices(42)] IFormattable dependency)
 {
     public IFormattable Dependency => dependency;
 }
