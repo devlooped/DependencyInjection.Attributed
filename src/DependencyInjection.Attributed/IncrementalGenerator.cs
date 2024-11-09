@@ -314,7 +314,7 @@ public class IncrementalGenerator : IIncrementalGenerator
             }
 
             output.AppendLine($"            services.AddKeyedTransient<Func<{impl}>>({key}, (s, k) => () => s.GetRequiredKeyedService<{impl}>(k));");
-            output.AppendLine($"            services.AddKeyedTransient({key}, (s, k) => new Lazy<{impl}>(s.GetRequiredKeyedService<{impl}>(k)));");
+            output.AppendLine($"            services.AddKeyedTransient({key}, (s, k) => new Lazy<{impl}>(() => s.GetRequiredKeyedService<{impl}>(k)));");
 
             foreach (var iface in type.Type.AllInterfaces)
             {
@@ -323,7 +323,7 @@ public class IncrementalGenerator : IIncrementalGenerator
                 {
                     output.AppendLine($"            services.{methodName}<{ifaceName}>({key}, (s, k) => s.GetRequiredKeyedService<{impl}>(k));");
                     output.AppendLine($"            services.AddKeyedTransient<Func<{ifaceName}>>({key}, (s, k) => () => s.GetRequiredKeyedService<{ifaceName}>(k));");
-                    output.AppendLine($"            services.AddKeyedTransient({key}, (s, k) => new Lazy<{ifaceName}>(s.GetRequiredKeyedService<{ifaceName}>(k)));");
+                    output.AppendLine($"            services.AddKeyedTransient({key}, (s, k) => new Lazy<{ifaceName}>(() => s.GetRequiredKeyedService<{ifaceName}>(k)));");
                     registered.Add(ifaceName);
                 }
 
@@ -351,7 +351,7 @@ public class IncrementalGenerator : IIncrementalGenerator
                         {
                             output.AppendLine($"            services.{methodName}<{candidate}>({key}, (s, k) => s.GetRequiredKeyedService<{impl}>(k));");
                             output.AppendLine($"            services.AddKeyedTransient<Func<{candidate}>>({key}, (s, k) => () => s.GetRequiredKeyedService<{candidate}>(k));");
-                            output.AppendLine($"            services.AddKeyedTransient({key}, (s, k) => new Lazy<{candidate}>(k, s.GetRequiredKeyedService<{candidate}>(k)));");
+                            output.AppendLine($"            services.AddKeyedTransient({key}, (s, k) => new Lazy<{candidate}>(() => s.GetRequiredKeyedService<{candidate}>(k)));");
                             registered.Add(candidate);
                         }
                     }
