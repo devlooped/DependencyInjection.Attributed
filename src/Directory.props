@@ -3,6 +3,7 @@
   <PropertyGroup>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageProjectUrl>https://github.com/devlooped/DependencyInjection.Attributed</PackageProjectUrl>
+    <RestoreSources>$(RestoreSources);https://pkg.kzu.app/index.json</RestoreSources>
   </PropertyGroup>
 
 </Project>
