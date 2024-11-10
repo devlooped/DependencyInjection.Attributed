@@ -6,8 +6,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Xunit.Abstractions;
-using Test = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerTest<Devlooped.Extensions.DependencyInjection.Attributed.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.Verifiers.XUnitVerifier>;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<Devlooped.Extensions.DependencyInjection.Attributed.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.Verifiers.XUnitVerifier>;
+using Test = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerTest<Devlooped.Extensions.DependencyInjection.Attributed.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<Devlooped.Extensions.DependencyInjection.Attributed.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Tests.CodeAnalysis;
 
