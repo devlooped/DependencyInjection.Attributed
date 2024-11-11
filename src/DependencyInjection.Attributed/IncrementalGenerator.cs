@@ -18,6 +18,8 @@ namespace Devlooped.Extensions.DependencyInjection.Attributed;
 [Generator(LanguageNames.CSharp)]
 public class IncrementalGenerator : IIncrementalGenerator
 {
+    record ServiceSymbol(INamedTypeSymbol Type, TypedConstant? Key, int Lifetime);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var types = context.CompilationProvider.SelectMany((x, c) =>
@@ -58,65 +60,65 @@ public class IncrementalGenerator : IIncrementalGenerator
         // NOTE: we recognize the attribute by name, not precise type. This makes the generator 
         // more flexible and avoids requiring any sort of run-time dependency.
         var services = types
-            .Select((x, _) =>
+            .SelectMany((x, _) =>
             {
                 var name = x.Name;
                 var attrs = x.GetAttributes();
-                var serviceAttr = attrs.FirstOrDefault(IsService) ?? attrs.FirstOrDefault(IsKeyedService);
-                var service = serviceAttr != null || attrs.Any(IsExport);
+                var services = new List<ServiceSymbol>();
 
-                if (!service)
-                    return null;
-
-                TypedConstant? key = default;
-
-                // Default lifetime is singleton for [Service], Transient for MEF
-                var lifetime = serviceAttr != null ? 0 : 2;
-                if (serviceAttr != null)
+                foreach (var attr in attrs)
                 {
-                    if (IsKeyedService(serviceAttr))
+                    var serviceAttr = IsService(attr) || IsKeyedService(attr) ? attr : null;
+                    if (serviceAttr == null && !IsExport(attr))
+                        continue;
+
+                    TypedConstant? key = default;
+
+                    // Default lifetime is singleton for [Service], Transient for MEF
+                    var lifetime = serviceAttr != null ? 0 : 2;
+                    if (serviceAttr != null)
                     {
-                        key = serviceAttr.ConstructorArguments[0];
-                        lifetime = (int)serviceAttr.ConstructorArguments[1].Value!;
+                        if (IsKeyedService(serviceAttr))
+                        {
+                            key = serviceAttr.ConstructorArguments[0];
+                            lifetime = (int)serviceAttr.ConstructorArguments[1].Value!;
+                        }
+                        else
+                        {
+                            lifetime = (int)serviceAttr.ConstructorArguments[0].Value!;
+                        }
                     }
                     else
                     {
-                        lifetime = (int)serviceAttr.ConstructorArguments[0].Value!;
-                    }
-                }
-                else
-                {
-                    // In NuGet MEF, [Shared] makes exports singleton
-                    if (attrs.Any(a => a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.Composition.SharedAttribute"))
-                    {
-                        lifetime = 0;
-                    }
-                    // In .NET MEF, [PartCreationPolicy(CreationPolicy.Shared)] does it.
-                    else if (attrs.Any(a =>
-                        a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.ComponentModel.Composition.PartCreationPolicyAttribute" &&
-                        a.ConstructorArguments.Length == 1 &&
-                        a.ConstructorArguments[0].Kind == TypedConstantKind.Enum &&
-                        a.ConstructorArguments[0].Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.ComponentModel.Composition.CreationPolicy" &&
-                        (int)a.ConstructorArguments[0].Value! == 1))
-                    {
-                        lifetime = 0;
+                        // In NuGet MEF, [Shared] makes exports singleton
+                        if (attrs.Any(a => a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.Composition.SharedAttribute"))
+                        {
+                            lifetime = 0;
+                        }
+                        // In .NET MEF, [PartCreationPolicy(CreationPolicy.Shared)] does it.
+                        else if (attrs.Any(a =>
+                            a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.ComponentModel.Composition.PartCreationPolicyAttribute" &&
+                            a.ConstructorArguments.Length == 1 &&
+                            a.ConstructorArguments[0].Kind == TypedConstantKind.Enum &&
+                            a.ConstructorArguments[0].Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.ComponentModel.Composition.CreationPolicy" &&
+                            (int)a.ConstructorArguments[0].Value! == 1))
+                        {
+                            lifetime = 0;
+                        }
+
+                        // Consider the [Export(contractName)] as a keyed service with the contract name as the key.
+                        if (attrs.FirstOrDefault(IsExport) is { } export &&
+                            export.ConstructorArguments.Length > 0 &&
+                            export.ConstructorArguments[0].Kind == TypedConstantKind.Primitive)
+                        {
+                            key = export.ConstructorArguments[0];
+                        }
                     }
 
-                    // Consider the [Export(contractName)] as a keyed service with the contract name as the key.
-                    if (attrs.FirstOrDefault(IsExport) is { } export &&
-                        export.ConstructorArguments.Length > 0 &&
-                        export.ConstructorArguments[0].Kind == TypedConstantKind.Primitive)
-                    {
-                        key = export.ConstructorArguments[0];
-                    }
+                    services.Add(new(x, key, lifetime));
                 }
 
-                return new
-                {
-                    Type = x,
-                    Key = key,
-                    Lifetime = lifetime
-                };
+                return services.ToImmutableArray();
             })
             .Where(x => x != null);
 

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// Requires v8 or later of Microsoft.Extensions.DependencyInjection package.
     /// </summary>
     /// <typeparam name="TKey">Type of service key.</typeparam>
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     partial class ServiceAttribute<TKey> : Attribute
     {
         /// <summary>

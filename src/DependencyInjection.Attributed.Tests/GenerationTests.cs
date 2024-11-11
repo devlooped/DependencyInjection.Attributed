@@ -201,6 +201,23 @@ public class GenerationTests(ITestOutputHelper Output)
     }
 
     [Fact]
+    public void ResolveMultipleKeys()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        var sms = services.GetRequiredKeyedService<INotificationService>("sms");
+        var email = services.GetRequiredKeyedService<INotificationService>("email");
+        var def = services.GetRequiredKeyedService<INotificationService>("default");
+
+        // Each gets its own instance, since we can't tell apart. Lifetimes can also be disparate.
+        Assert.NotSame(sms, email);
+        Assert.NotSame(sms, def);
+        Assert.NotSame(email, def);
+    }
+
+    [Fact]
     public void ResolvesDependency()
     {
         var collection = new ServiceCollection();
@@ -350,3 +367,21 @@ public class DependencyFromKeyedContract([Import("contract")] KeyedByContractNam
 public interface IService { }
 [Service]
 class InternalService : IService { }
+
+public interface INotificationService
+{
+    string Notify(string message);
+}
+
+[Service<string>("sms")]
+public class SmsNotificationService : INotificationService
+{
+    public string Notify(string message) => $"[SMS] {message}";
+}
+
+[Service<string>("email")]
+[Service<string>("default")]
+public class EmailNotificationService : INotificationService
+{
+    public string Notify(string message) => $"[Email] {message}";
+}
