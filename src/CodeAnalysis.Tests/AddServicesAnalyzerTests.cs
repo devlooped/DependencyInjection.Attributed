@@ -1,12 +1,16 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Devlooped.Extensions.DependencyInjection.Attributed;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Xunit.Abstractions;
-using Test = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerTest<Devlooped.Extensions.DependencyInjection.Attributed.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+using AnalyzerTest = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerTest<Devlooped.Extensions.DependencyInjection.Attributed.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<Devlooped.Extensions.DependencyInjection.Attributed.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Tests.CodeAnalysis;
@@ -16,9 +20,11 @@ public record AddServicesAnalyzerTests(ITestOutputHelper Output)
     [Fact]
     public async Task NoWarningIfAddServicesPresent()
     {
-        var test = new Test
+        var test = new GeneratorsTest
         {
-            TestCode = """
+            TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,
+            TestCode =
+            """
             using System;
             using Microsoft.Extensions.DependencyInjection;
             
@@ -43,21 +49,6 @@ public record AddServicesAnalyzerTests(ITestOutputHelper Output)
                     .AddPackages(ImmutableArray.Create(
                         new PackageIdentity("Microsoft.Extensions.DependencyInjection", "6.0.0")))
             },
-            CompilationTransforms =
-            {
-                (compilation, _) =>
-                {
-                    CSharpGeneratorDriver
-                        .Create(new StaticGenerator())
-                        .RunGeneratorsAndUpdateCompilation(compilation, out var staticPass, out var _);
-
-                    CSharpGeneratorDriver
-                        .Create(new IncrementalGenerator())
-                        .RunGeneratorsAndUpdateCompilation(staticPass, out var incrementalPass, out var _);
-
-                    return incrementalPass;
-                }
-            }
         };
 
         //var expected = Verifier.Diagnostic(AddServicesAnalyzer.NoAddServicesCall).WithLocation(0);
@@ -71,8 +62,9 @@ public record AddServicesAnalyzerTests(ITestOutputHelper Output)
     [Fact]
     public async Task NoWarningIfNoServiceCollectionCalls()
     {
-        var test = new Test
+        var test = new GeneratorsTest
         {
+            TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,
             TestCode = """
             using System;
             using Microsoft.Extensions.DependencyInjection;
@@ -97,21 +89,6 @@ public record AddServicesAnalyzerTests(ITestOutputHelper Output)
                     .AddPackages(ImmutableArray.Create(
                         new PackageIdentity("Microsoft.Extensions.DependencyInjection.Abstractions", "6.0.0")))
             },
-            CompilationTransforms =
-            {
-                (compilation, _) =>
-                {
-                    CSharpGeneratorDriver
-                        .Create(new StaticGenerator())
-                        .RunGeneratorsAndUpdateCompilation(compilation, out var staticPass, out var _);
-
-                    CSharpGeneratorDriver
-                        .Create(new IncrementalGenerator())
-                        .RunGeneratorsAndUpdateCompilation(staticPass, out var incrementalPass, out var _);
-
-                    return incrementalPass;
-                }
-            }
         };
 
         await test.RunAsync();
@@ -120,7 +97,7 @@ public record AddServicesAnalyzerTests(ITestOutputHelper Output)
     [Fact]
     public async Task WarnIfAddServicesMissing()
     {
-        var test = new Test
+        var test = new AnalyzerTest
         {
             TestCode = """
             using System;
@@ -140,28 +117,13 @@ public record AddServicesAnalyzerTests(ITestOutputHelper Output)
             TestState =
             {
                 ReferenceAssemblies = new ReferenceAssemblies(
-                    "net6.0",
+                    "net8.0",
                     new PackageIdentity(
-                        "Microsoft.NETCore.App.Ref", "6.0.0"),
-                        Path.Combine("ref", "net6.0"))
+                        "Microsoft.NETCore.App.Ref", "8.0.0"),
+                        Path.Combine("ref", "net8.0"))
                     .AddPackages(ImmutableArray.Create(
-                        new PackageIdentity("Microsoft.Extensions.DependencyInjection", "6.0.0")))
+                        new PackageIdentity("Microsoft.Extensions.DependencyInjection", "8.0.0")))
             },
-            CompilationTransforms =
-            {
-                (compilation, _) =>
-                {
-                    CSharpGeneratorDriver
-                        .Create(new StaticGenerator())
-                        .RunGeneratorsAndUpdateCompilation(compilation, out var staticPass, out var _);
-
-                    CSharpGeneratorDriver
-                        .Create(new IncrementalGenerator())
-                        .RunGeneratorsAndUpdateCompilation(staticPass, out var incrementalPass, out var _);
-
-                    return incrementalPass;
-                }
-            }
         };
 
         var expected = Verifier.Diagnostic(AddServicesAnalyzer.NoAddServicesCall).WithLocation(0);
@@ -173,8 +135,9 @@ public record AddServicesAnalyzerTests(ITestOutputHelper Output)
     [Fact]
     public async Task WarnIfAddServicesMissingMultipleLocations()
     {
-        var test = new Test
+        var test = new AnalyzerTest
         {
+            TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,
             TestCode = """
             using System;
             using Microsoft.Extensions.DependencyInjection;
@@ -195,33 +158,23 @@ public record AddServicesAnalyzerTests(ITestOutputHelper Output)
             TestState =
             {
                 ReferenceAssemblies = new ReferenceAssemblies(
-                    "net6.0",
+                    "net8.0",
                     new PackageIdentity(
-                        "Microsoft.NETCore.App.Ref", "6.0.0"),
-                        Path.Combine("ref", "net6.0"))
+                        "Microsoft.NETCore.App.Ref", "8.0.0"),
+                        Path.Combine("ref", "net8.0"))
                     .AddPackages(ImmutableArray.Create(
-                        new PackageIdentity("Microsoft.Extensions.DependencyInjection", "6.0.0")))
+                        new PackageIdentity("Microsoft.Extensions.DependencyInjection", "8.0.0")))
             },
-            CompilationTransforms =
-            {
-                (compilation, _) =>
-                {
-                    CSharpGeneratorDriver
-                        .Create(new StaticGenerator())
-                        .RunGeneratorsAndUpdateCompilation(compilation, out var staticPass, out var _);
-
-                    CSharpGeneratorDriver
-                        .Create(new IncrementalGenerator())
-                        .RunGeneratorsAndUpdateCompilation(staticPass, out var incrementalPass, out var _);
-
-                    return incrementalPass;
-                }
-            }
         };
 
         var expected = Verifier.Diagnostic(AddServicesAnalyzer.NoAddServicesCall).WithLocation(0);
         test.ExpectedDiagnostics.Add(expected);
 
         await test.RunAsync();
+    }
+
+    class GeneratorsTest : CSharpSourceGeneratorTest<StaticGenerator, DefaultVerifier>
+    {
+        protected override IEnumerable<Type> GetSourceGenerators() => base.GetSourceGenerators().Concat([typeof(IncrementalGenerator)]);
     }
 }
