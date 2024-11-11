@@ -26,7 +26,7 @@ namespace Devlooped.Extensions.DependencyInjection.Attributed
             AddKeyedScopedServices(services);
             AddKeyedSingletonServices(services);
             AddKeyedTransientServices(services);
-            
+
             return services;
         }
 
@@ -34,7 +34,7 @@ namespace Devlooped.Extensions.DependencyInjection.Attributed
         /// Adds discovered scoped services to the collection.
         /// </summary>
         static partial void AddScopedServices(IServiceCollection services);
-                        
+
         /// <summary>
         /// Adds discovered singleton services to the collection.
         /// </summary>
@@ -49,17 +49,17 @@ namespace Devlooped.Extensions.DependencyInjection.Attributed
         /// Adds discovered keyed scoped services to the collection.
         /// </summary>
         static partial void AddKeyedScopedServices(IServiceCollection services);
-                        
+
         /// <summary>
         /// Adds discovered keyed singleton services to the collection.
         /// </summary>
         static partial void AddKeyedSingletonServices(IServiceCollection services);
-            
+
         /// <summary>
         /// Adds discovered keyed transient services to the collection.
         /// </summary>
         static partial void AddKeyedTransientServices(IServiceCollection services);
-            
+
         [AttributeUsage(AttributeTargets.Method)]
         class DDIAddServicesAttribute : Attribute { }
     }
