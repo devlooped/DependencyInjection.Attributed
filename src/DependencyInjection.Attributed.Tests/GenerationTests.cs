@@ -7,8 +7,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Tests.DependencyInjection;
 
-public record GenerationTests(ITestOutputHelper Output)
+public class GenerationTests(ITestOutputHelper Output)
 {
+    [Fact]
+    public void RegisterInternalService()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        var instance = services.GetRequiredService<IService>();
+    }
+
     [Fact]
     public void RegisterSingletonService()
     {
@@ -336,3 +346,7 @@ public class DependencyFromKeyedContract([Import("contract")] KeyedByContractNam
 {
     public KeyedByContractName Dependency => dependency;
 }
+
+public interface IService { }
+[Service]
+class InternalService : IService { }
