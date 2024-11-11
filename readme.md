@@ -81,6 +81,7 @@ public class SmsNotificationService : INotificationService
 }
 
 [Service<string>("email")]
+[Service<string>("default")]
 public class EmailNotificationService : INotificationService
 {
     public string Notify(string message) => $"[Email] {message}";
@@ -101,6 +102,8 @@ public class SmsService([FromKeyedServices("sms")] INotificationService sms)
 In this case, when resolving the `SmsService` from the service provider, the 
 right `INotificationService` will be injected, based on the key provided.
 
+Note you can also register the same service using multiple keys, as shown in the 
+`EmailNotificationService` above.
 
 ## How It Works
 
