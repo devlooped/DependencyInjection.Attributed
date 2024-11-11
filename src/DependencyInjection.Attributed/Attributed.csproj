@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <LangVersion>Preview</LangVersion>
@@ -10,17 +10,20 @@
     <PackFolder>analyzers/dotnet</PackFolder>
     <IsRoslynComponent>true</IsRoslynComponent>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <DefineConstants>$(DefineConstants);DDI_ADDSERVICE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <None Update="Devlooped.Extensions.DependencyInjection.Attributed.props" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
     <None Update="Devlooped.Extensions.DependencyInjection.Attributed.targets" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
+    <EmbeddedResource Include="ServiceAttribute*.cs;AddServicesExtension.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NuGetizer" Version="1.2.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" Pack="false" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="ThisAssembly.Resources" Version="2.0.8" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="PokePackageVersion" BeforeTargets="GetPackageContents" DependsOnTargets="CopyFilesToOutputDirectory" Condition="'$(dotnet-nugetize)' == '' and Exists('$(OutputPath)\Devlooped.Extensions.DependencyInjection.Attributed.props')">
