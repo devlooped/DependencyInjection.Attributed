@@ -270,20 +270,6 @@ parameters), you can annotate it with `[ImportingConstructor]` from either NuGet
 or .NET MEF ([System.ComponentModel.Composition](https://www.nuget.org/packages/System.ComponentModel.Composition)).
 
 
-### Customize Generated Class
-
-You can customize the generated class namespace and name with the following 
-MSBuild properties:
-
-```xml
-<PropertyGroup>
-    <AddServicesNamespace>MyNamespace</AddServicesNamespace>
-    <AddServicesClassName>MyExtensions</AddServicesClassName>
-</PropertyGroup>
-```
-
-They default to `Microsoft.Extensions.DependencyInjection` and `AddServicesExtension` 
-respectively.
 
 <!-- include https://github.com/devlooped/sponsors/raw/main/footer.md -->
 # Sponsors 

@@ -42,7 +42,7 @@ public class ConventionAnalyzerTests(ITestOutputHelper Output)
             {
                 Sources =
                 {
-                    ThisAssembly.Resources.AttributedServicesExtension.Text,
+                    ThisAssembly.Resources.AddServicesNoReflectionExtension.Text,
                     ThisAssembly.Resources.ServiceAttribute.Text,
                     ThisAssembly.Resources.ServiceAttribute_1.Text,
                 },
@@ -86,7 +86,7 @@ public class ConventionAnalyzerTests(ITestOutputHelper Output)
             {
                 Sources =
                 {
-                    ThisAssembly.Resources.AttributedServicesExtension.Text,
+                    ThisAssembly.Resources.AddServicesNoReflectionExtension.Text,
                     ThisAssembly.Resources.ServiceAttribute.Text,
                     ThisAssembly.Resources.ServiceAttribute_1.Text,
                 },
@@ -133,7 +133,7 @@ public class ConventionAnalyzerTests(ITestOutputHelper Output)
             {
                 Sources =
                 {
-                    ThisAssembly.Resources.AttributedServicesExtension.Text,
+                    ThisAssembly.Resources.AddServicesNoReflectionExtension.Text,
                     ThisAssembly.Resources.ServiceAttribute.Text,
                     ThisAssembly.Resources.ServiceAttribute_1.Text,
                 },

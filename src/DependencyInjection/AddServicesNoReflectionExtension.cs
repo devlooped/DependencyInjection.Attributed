@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// compile-time discovered services to an <see cref="IServiceCollection"/>.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    static partial class AttributedServicesExtension
+    static partial class AddServicesNoReflectionExtension
     {
         static readonly ServiceDescriptor servicesAddedDescriptor = new ServiceDescriptor(typeof(DDIAddServicesAttribute), _ => new DDIAddServicesAttribute(), ServiceLifetime.Singleton);
 
