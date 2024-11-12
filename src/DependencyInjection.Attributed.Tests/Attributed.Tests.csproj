@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.props" />
 
@@ -7,6 +7,18 @@
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <RootNamespace>Tests</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ComponentModelTests.cs" />
+    <Compile Remove="CompositionTests.cs" />
+    <Compile Remove="GenerationTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ComponentModelTests.cs" />
+    <None Include="CompositionTests.cs" />
+    <None Include="GenerationTests.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
@@ -28,6 +40,7 @@
     <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 
+  <Import Project="ContentFiles.targets" />
   <Import Project="..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.targets" />
 
 </Project>

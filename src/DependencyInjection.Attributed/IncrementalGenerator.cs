@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using KeyedService = (Microsoft.CodeAnalysis.INamedTypeSymbol Type, Microsoft.CodeAnalysis.TypedConstant? Key);
 
@@ -18,7 +20,13 @@ namespace Devlooped.Extensions.DependencyInjection.Attributed;
 [Generator(LanguageNames.CSharp)]
 public class IncrementalGenerator : IIncrementalGenerator
 {
-    record ServiceSymbol(INamedTypeSymbol Type, TypedConstant? Key, int Lifetime);
+    record ServiceSymbol(INamedTypeSymbol Type, int Lifetime, TypedConstant? Key);
+    record ServiceRegistration(int Lifetime, INamedTypeSymbol? AssignableTo, string? FullNameExpression)
+    {
+        Regex? regex;
+
+        public Regex Regex => (regex ??= FullNameExpression is not null ? new(FullNameExpression) : new(".*"));
+    }
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -34,7 +42,7 @@ public class IncrementalGenerator : IIncrementalGenerator
                 symbol?.Accept(visitor);
             }
 
-            return visitor.TypeSymbols;
+            return visitor.TypeSymbols.Where(t => !t.IsAbstract && t.TypeKind == TypeKind.Class);
         });
 
         bool IsService(AttributeData attr) =>
@@ -59,7 +67,8 @@ public class IncrementalGenerator : IIncrementalGenerator
 
         // NOTE: we recognize the attribute by name, not precise type. This makes the generator 
         // more flexible and avoids requiring any sort of run-time dependency.
-        var services = types
+
+        var attributedServices = types
             .SelectMany((x, _) =>
             {
                 var name = x.Name;
@@ -115,7 +124,7 @@ public class IncrementalGenerator : IIncrementalGenerator
                         }
                     }
 
-                    services.Add(new(x, key, lifetime));
+                    services.Add(new(x, lifetime, key));
                 }
 
                 return services.ToImmutableArray();
@@ -127,16 +136,57 @@ public class IncrementalGenerator : IIncrementalGenerator
         // Only requisite is that we define Scoped = 0, Singleton = 1 and Transient = 2.
         // This matches https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicelifetime?view=dotnet-plat-ext-6.0#fields
 
+        // Add conventional registrations.
+
+        // First get all AddServices(type, regex, lifetime) invocations.
+        var methodInvocations = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: static (node, _) => node is InvocationExpressionSyntax,
+                transform: static (ctx, _) => GetServiceRegistration((InvocationExpressionSyntax)ctx.Node, ctx.SemanticModel))
+            .Where(details => details != null)
+            .Collect();
+
+        // Project matching service types to register with the given lifetime.
+        var conventionServices = types.Combine(methodInvocations.Combine(context.CompilationProvider)).SelectMany((pair, cancellationToken) =>
+        {
+            var (typeSymbol, (registrations, compilation)) = pair;
+            var results = ImmutableArray.CreateBuilder<ServiceSymbol>();
+
+            foreach (var registration in registrations)
+            {
+                // check of typeSymbol is assignable (is the same type, inherits from it or implements if its an interface) to registration.AssignableTo
+                if (registration!.AssignableTo is not null && !typeSymbol.Is(registration.AssignableTo))
+                    continue;
+
+                if (registration!.FullNameExpression != null && !registration.Regex.IsMatch(typeSymbol.ToFullName(compilation)))
+                    continue;
+
+                results.Add(new ServiceSymbol(typeSymbol, registration.Lifetime, null));
+            }
+
+            return results.ToImmutable();
+        });
+
+        // Flatten and remove duplicates
+        var finalServices = attributedServices.Collect().Combine(conventionServices.Collect())
+            .SelectMany((tuple, _) => ImmutableArray.CreateRange([tuple.Item1, tuple.Item2]))
+            .SelectMany((items, _) => items.Distinct().ToImmutableArray());
+
+        RegisterServicesOutput(context, finalServices, options);
+    }
+
+    void RegisterServicesOutput(IncrementalGeneratorInitializationContext context, IncrementalValuesProvider<ServiceSymbol> services, IncrementalValueProvider<(AnalyzerConfigOptionsProvider Left, Compilation Right)> options)
+    {
         context.RegisterImplementationSourceOutput(
-            services.Where(x => x!.Lifetime == 0 && x.Key is null).Select((x, _) => new KeyedService(x!.Type, x.Key!)).Collect().Combine(options),
+            services.Where(x => x!.Lifetime == 0 && x.Key is null).Select((x, _) => new KeyedService(x!.Type, null)).Collect().Combine(options),
             (ctx, data) => AddPartial("AddSingleton", ctx, data));
 
         context.RegisterImplementationSourceOutput(
-            services.Where(x => x!.Lifetime == 1 && x.Key is null).Select((x, _) => new KeyedService(x!.Type, x.Key!)).Collect().Combine(options),
+            services.Where(x => x!.Lifetime == 1 && x.Key is null).Select((x, _) => new KeyedService(x!.Type, null)).Collect().Combine(options),
             (ctx, data) => AddPartial("AddScoped", ctx, data));
 
         context.RegisterImplementationSourceOutput(
-            services.Where(x => x!.Lifetime == 2 && x.Key is null).Select((x, _) => new KeyedService(x!.Type, x.Key!)).Collect().Combine(options),
+            services.Where(x => x!.Lifetime == 2 && x.Key is null).Select((x, _) => new KeyedService(x!.Type, null)).Collect().Combine(options),
             (ctx, data) => AddPartial("AddTransient", ctx, data));
 
         context.RegisterImplementationSourceOutput(
@@ -152,17 +202,54 @@ public class IncrementalGenerator : IIncrementalGenerator
             (ctx, data) => AddPartial("AddKeyedTransient", ctx, data));
     }
 
+    static ServiceRegistration? GetServiceRegistration(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    {
+        var symbolInfo = semanticModel.GetSymbolInfo(invocation);
+        if (symbolInfo.Symbol is IMethodSymbol methodSymbol &&
+            methodSymbol.GetAttributes().Any(attr => attr.AttributeClass?.Name == "DDIAddServicesAttribute") &&
+            methodSymbol.Parameters.Length >= 2)
+        {
+            var defaultLifetime = methodSymbol.Parameters.FirstOrDefault(x => x.Type.Name == "ServiceLifetime" && x.HasExplicitDefaultValue)?.ExplicitDefaultValue;
+            // This allows us to change the API-provided default without having to change the source generator to match, if needed.
+            var lifetime = defaultLifetime is int value ? value : 0;
+            INamedTypeSymbol? assignableTo = null;
+            string? fullNameExpression = null;
+
+            foreach (var argument in invocation.ArgumentList.Arguments)
+            {
+                var typeInfo = semanticModel.GetTypeInfo(argument.Expression).Type;
+
+                if (typeInfo is INamedTypeSymbol namedType)
+                {
+                    if (namedType.Name == "ServiceLifetime")
+                    {
+                        lifetime = (int?)semanticModel.GetConstantValue(argument.Expression).Value ?? 0;
+                    }
+                    else if (namedType.Name == "Type" && argument.Expression is TypeOfExpressionSyntax typeOf &&
+                        semanticModel.GetSymbolInfo(typeOf.Type).Symbol is INamedTypeSymbol typeSymbol)
+                    {
+                        // TODO: analyzer error if argument is not typeof(T)
+                        assignableTo = typeSymbol;
+                    }
+                    else if (namedType.SpecialType == SpecialType.System_String)
+                    {
+                        fullNameExpression = semanticModel.GetConstantValue(argument.Expression).Value as string;
+                    }
+                }
+            }
+
+            if (assignableTo != null || fullNameExpression != null)
+            {
+                return new ServiceRegistration(lifetime, assignableTo, fullNameExpression);
+            }
+        }
+        return null;
+    }
+
     void AddPartial(string methodName, SourceProductionContext ctx, (ImmutableArray<KeyedService> Types, (AnalyzerConfigOptionsProvider Config, Compilation Compilation) Options) data)
     {
         var builder = new StringBuilder()
             .AppendLine("// <auto-generated />");
-
-        var rootNs = data.Options.Config.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out var value) && !string.IsNullOrEmpty(value)
-            ? value
-            : "Microsoft.Extensions.DependencyInjection";
-
-        var className = data.Options.Config.GlobalOptions.TryGetValue("build_property.AddServicesClassName", out value) && !string.IsNullOrEmpty(value) ?
-            value : "AddServicesExtension";
 
         foreach (var alias in data.Options.Compilation.References.SelectMany(r => r.Properties.Aliases))
         {
@@ -171,12 +258,12 @@ public class IncrementalGenerator : IIncrementalGenerator
 
         builder.AppendLine(
           $$"""
-            using Microsoft.Extensions.DependencyInjection;
+            using Microsoft.Extensions.DependencyInjection.Extensions;
             using System;
             
-            namespace {{rootNs}}
+            namespace Microsoft.Extensions.DependencyInjection
             {
-                static partial class {{className}}
+                static partial class AttributedServicesExtension
                 {
                     static partial void {{methodName}}Services(IServiceCollection services)
                     {
@@ -224,11 +311,11 @@ public class IncrementalGenerator : IIncrementalGenerator
 
                     return $"s.GetRequiredService<{p.Type.ToFullName(compilation)}>()";
                 }));
-                output.AppendLine($"            services.{methodName}(s => new {impl}({args}));");
+                output.AppendLine($"            services.Try{methodName}(s => new {impl}({args}));");
             }
             else
             {
-                output.AppendLine($"            services.{methodName}(s => new {impl}());");
+                output.AppendLine($"            services.Try{methodName}(s => new {impl}());");
             }
 
             output.AppendLine($"            services.AddTransient<Func<{impl}>>(s => s.GetRequiredService<{impl}>);");
@@ -370,7 +457,6 @@ public class IncrementalGenerator : IIncrementalGenerator
              // In this case, the Import attribute ctor can only have a primitive string value, not enum.
              attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Kind == TypedConstantKind.Primitive);
     }
-
 
     class TypesVisitor : SymbolVisitor
     {

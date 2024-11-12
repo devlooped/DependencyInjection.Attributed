@@ -48,7 +48,9 @@ public class AddServicesAnalyzer : DiagnosticAnalyzer
                     .DescendantNodes()
                     .OfType<InvocationExpressionSyntax>()
                     .Select(invocation => new { Invocation = invocation, semantic.GetSymbolInfo(invocation, semanticContext.CancellationToken).Symbol })
-                    .Where(x => x.Symbol is IMethodSymbol)
+                    // We don't consider invocations from methods that have the DDIAddServicesAttribute as user-provided, since we do that 
+                    // in our type/regex overloads. Users need to invoke those methods in turn.
+                    .Where(x => x.Symbol is IMethodSymbol method && !method.GetAttributes().Any(attr => attr.AttributeClass?.Name == "DDIAddServicesAttribute"))
                     .Select(x => new { x.Invocation, Method = (IMethodSymbol)x.Symbol! });
 
                 bool IsServiceCollectionExtension(IMethodSymbol method) => method.IsExtensionMethod &&
