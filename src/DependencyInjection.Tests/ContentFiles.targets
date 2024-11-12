@@ -2,13 +2,13 @@
   <!-- Simulates including the files under contentFiles/cs/netstandard2.0 in the final package -->
 
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)..\DependencyInjection\AttributedServicesExtension.cs" Link="AttributedServicesExtension.cs" Visible="false" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\DependencyInjection\AddServicesNoReflectionExtension.cs" Link="AddServicesNoReflectionExtension.cs" Visible="false" />
     <Compile Include="$(MSBuildThisFileDirectory)..\DependencyInjection\ServiceAttribute.cs" Link="ServiceAttribute.cs" Visible="false" />
     <Compile Include="$(MSBuildThisFileDirectory)..\DependencyInjection\ServiceAttribute`1.cs" Link="ServiceAttribute`1.cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\DependencyInjection\AttributedServicesExtension.cs" Type="Non-Resx" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\DependencyInjection\AddServicesNoReflectionExtension.cs" Type="Non-Resx" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\DependencyInjection\ServiceAttribute.cs" Type="Non-Resx" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\DependencyInjection\ServiceAttribute`1.cs" Type="Non-Resx" />
   </ItemGroup>

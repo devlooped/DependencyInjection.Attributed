@@ -25,7 +25,7 @@
   <ItemGroup>
     <None Update="Devlooped.Extensions.DependencyInjection.props" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
     <None Update="Devlooped.Extensions.DependencyInjection.targets" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
-    <Compile Update="AttributedServicesExtension.cs" Pack="true" />
+    <Compile Update="AddServicesNoReflectionExtension.cs" Pack="true" />
     <Compile Update="ServiceAttribute*.cs" Pack="true" />
   </ItemGroup>
 

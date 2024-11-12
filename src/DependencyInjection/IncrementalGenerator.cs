@@ -263,7 +263,7 @@ public class IncrementalGenerator : IIncrementalGenerator
             
             namespace Microsoft.Extensions.DependencyInjection
             {
-                static partial class AttributedServicesExtension
+                static partial class AddServicesNoReflectionExtension
                 {
                     static partial void {{methodName}}Services(IServiceCollection services)
                     {
