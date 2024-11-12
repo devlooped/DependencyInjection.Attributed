@@ -269,6 +269,21 @@ parameters), you can annotate it with `[ImportingConstructor]` from either NuGet
 ([System.Composition](http://nuget.org/packages/System.Composition.AttributedModel)) 
 or .NET MEF ([System.ComponentModel.Composition](https://www.nuget.org/packages/System.ComponentModel.Composition)).
 
+<!-- #content -->
+
+# Dogfooding
+
+[![CI Version](https://img.shields.io/endpoint?url=https://shields.kzu.app/vpre/Devlooped.Extensions.DependencyInjection/main&label=nuget.ci&color=brightgreen)](https://pkg.kzu.app/index.json)
+[![Build](https://github.com/devlooped/DependencyInjection/workflows/build/badge.svg?branch=main)](https://github.com/devlooped/DependencyInjection/actions)
+
+We also produce CI packages from branches and pull requests so you can dogfood builds as quickly as they are produced. 
+
+The CI feed is `https://pkg.kzu.app/index.json`. 
+
+The versioning scheme for packages is:
+
+- PR builds: *42.42.42-pr*`[NUMBER]`
+- Branch builds: *42.42.42-*`[BRANCH]`.`[COMMITS]`
 
 
 <!-- include https://github.com/devlooped/sponsors/raw/main/footer.md -->
