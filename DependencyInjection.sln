@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.32916.344
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Attributed", "src\DependencyInjection.Attributed\Attributed.csproj", "{9DF192DF-0330-4B82-81C5-B8E7B4D53E41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DependencyInjection", "src\DependencyInjection\DependencyInjection.csproj", "{9DF192DF-0330-4B82-81C5-B8E7B4D53E41}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Attributed.Tests", "src\DependencyInjection.Attributed.Tests\Attributed.Tests.csproj", "{F2E67084-FED3-4E17-A012-0E8948FD3E06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DependencyInjection.Tests", "src\DependencyInjection.Tests\DependencyInjection.Tests.csproj", "{F2E67084-FED3-4E17-A012-0E8948FD3E06}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeAnalysis.Tests", "src\CodeAnalysis.Tests\CodeAnalysis.Tests.csproj", "{E512DEBA-FB35-47FD-AF25-3BAECCF667B1}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library2", "src\Samples\Library2\Library2.csproj", "{EB3F2D78-0F2C-4A1B-BD5E-E31299B67601}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "src\Samples\ConsoleApp\ConsoleApp.csproj", "{26EF99DB-D846-4F65-929D-D7E3E820423A}"
+EndProject
+Project("{13B669BE-BB05-4DDF-9536-439F39A36129}") = "Attributed", "src\Attributed\Attributed.msbuildproj", "{1E68517F-34E7-415E-91B1-857802ED5592}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,10 @@ Global
 		{26EF99DB-D846-4F65-929D-D7E3E820423A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26EF99DB-D846-4F65-929D-D7E3E820423A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26EF99DB-D846-4F65-929D-D7E3E820423A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E68517F-34E7-415E-91B1-857802ED5592}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E68517F-34E7-415E-91B1-857802ED5592}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E68517F-34E7-415E-91B1-857802ED5592}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E68517F-34E7-415E-91B1-857802ED5592}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

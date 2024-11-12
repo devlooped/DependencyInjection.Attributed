@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Devlooped.Extensions.DependencyInjection.Attributed;
+namespace Devlooped.Extensions.DependencyInjection;
 
 [Generator(LanguageNames.CSharp)]
 public class StaticGenerator : ISourceGenerator
@@ -24,7 +24,7 @@ public class StaticGenerator : ISourceGenerator
             value : "AddServicesExtension";
 
         context.AddSource("AddServicesExtension.g", ThisAssembly.Resources.AddServicesExtension.Text
-                .Replace("Devlooped.Extensions.DependencyInjection.Attributed", rootNs)
+                .Replace("Devlooped.Extensions.DependencyInjection", rootNs)
                 .Replace("AddServicesExtension", className));
     }
 }

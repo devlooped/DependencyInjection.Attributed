@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.props" />
+  <Import Project="..\..\DependencyInjection\Devlooped.Extensions.DependencyInjection.props" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -17,9 +17,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Library1\Library1.csproj" Aliases="Library1" />
     <ProjectReference Include="..\Library2\Library2.csproj" Aliases="Library2" />
-    <ProjectReference Include="..\..\DependencyInjection.Attributed\Attributed.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\..\DependencyInjection\DependencyInjection.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
   </ItemGroup>
 
-  <Import Project="..\..\DependencyInjection.Attributed.Tests\ContentFiles.targets"  />
-  <Import Project="..\..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.props" />
+  <Import Project="..\..\DependencyInjection.Tests\ContentFiles.targets"  />
+  <Import Project="..\..\DependencyInjection\Devlooped.Extensions.DependencyInjection.targets" />
 </Project>

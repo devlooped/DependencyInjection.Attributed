@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.props" />
+  <Import Project="..\..\DependencyInjection\Devlooped.Extensions.DependencyInjection.props" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DependencyInjection.Attributed\Attributed.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\..\DependencyInjection\DependencyInjection.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
   </ItemGroup>
 
-  <Import Project="..\..\DependencyInjection.Attributed.Tests\ContentFiles.targets"  />
-  <Import Project="..\..\DependencyInjection.Attributed\Devlooped.Extensions.DependencyInjection.Attributed.props" />
+  <Import Project="..\..\DependencyInjection.Tests\ContentFiles.targets"  />
+  <Import Project="..\..\DependencyInjection\Devlooped.Extensions.DependencyInjection.props" />
 </Project>

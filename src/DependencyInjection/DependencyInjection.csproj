@@ -3,8 +3,8 @@
   <PropertyGroup>
     <LangVersion>Preview</LangVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Devlooped.Extensions.DependencyInjection.Attributed</AssemblyName>
-    <PackageId>Devlooped.Extensions.DependencyInjection.Attributed</PackageId>
+    <AssemblyName>Devlooped.Extensions.DependencyInjection</AssemblyName>
+    <PackageId>Devlooped.Extensions.DependencyInjection</PackageId>
     <Title>Automatic compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies.</Title>
     <Description>$(Title)</Description>
     <PackFolder>analyzers/dotnet</PackFolder>
@@ -23,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.props" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
-    <None Update="Devlooped.Extensions.DependencyInjection.Attributed.targets" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
+    <None Update="Devlooped.Extensions.DependencyInjection.props" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
+    <None Update="Devlooped.Extensions.DependencyInjection.targets" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
     <Compile Update="AttributedServicesExtension.cs" Pack="true" />
     <Compile Update="ServiceAttribute*.cs" Pack="true" />
   </ItemGroup>
@@ -36,8 +36,8 @@
     <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
   </ItemGroup>
 
-  <Target Name="PokePackageVersion" BeforeTargets="GetPackageContents" DependsOnTargets="CopyFilesToOutputDirectory" Condition="'$(dotnet-nugetize)' == '' and Exists('$(OutputPath)\Devlooped.Extensions.DependencyInjection.Attributed.props')">
-    <XmlPoke XmlInputPath="$(OutputPath)\Devlooped.Extensions.DependencyInjection.Attributed.props" Query="/Project/PropertyGroup/DevloopedExtensionsDependencyInjectionVersion" Value="$(PackageVersion)" />
+  <Target Name="PokePackageVersion" BeforeTargets="GetPackageContents" DependsOnTargets="CopyFilesToOutputDirectory" Condition="'$(dotnet-nugetize)' == '' and Exists('$(OutputPath)\Devlooped.Extensions.DependencyInjection.props')">
+    <XmlPoke XmlInputPath="$(OutputPath)\Devlooped.Extensions.DependencyInjection.props" Query="/Project/PropertyGroup/DevloopedExtensionsDependencyInjectionVersion" Value="$(PackageVersion)" />
   </Target>
 
   <UsingTask TaskName="XmlPoke" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
