@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Devlooped.Extensions.DependencyInjection.Attributed;
+namespace Devlooped.Extensions.DependencyInjection;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
 public class ConventionsAnalyzer : DiagnosticAnalyzer

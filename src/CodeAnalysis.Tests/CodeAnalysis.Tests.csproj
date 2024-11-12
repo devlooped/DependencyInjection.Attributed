@@ -17,9 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DependencyInjection.Attributed\Attributed.csproj" />
+    <ProjectReference Include="..\DependencyInjection\DependencyInjection.csproj" />
   </ItemGroup>
 
-  <Import Project="..\DependencyInjection.Attributed.Tests\ContentFiles.targets"  />
+  <Import Project="..\DependencyInjection.Tests\ContentFiles.targets"  />
 
 </Project>

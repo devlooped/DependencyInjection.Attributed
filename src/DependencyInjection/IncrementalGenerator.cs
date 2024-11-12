@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using KeyedService = (Microsoft.CodeAnalysis.INamedTypeSymbol Type, Microsoft.CodeAnalysis.TypedConstant? Key);
 
-namespace Devlooped.Extensions.DependencyInjection.Attributed;
+namespace Devlooped.Extensions.DependencyInjection;
 
 /// <summary>
 /// Discovers annotated services during compilation and generates the partial method 

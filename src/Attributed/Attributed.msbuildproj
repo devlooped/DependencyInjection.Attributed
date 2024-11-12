@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.5.0" TreatAsLocalProperty="Version">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <PackageId>Devlooped.Extensions.DependencyInjection.Attributed</PackageId>
+    <Description>Superseded by Devlooped.Extensions.DependencyInjection</Description>
+    <Version>2.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NuGetizer" Version="1.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DependencyInjection\DependencyInjection.csproj" />
+  </ItemGroup>
+  
+</Project>

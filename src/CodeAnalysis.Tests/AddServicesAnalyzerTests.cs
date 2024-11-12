@@ -4,14 +4,14 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Devlooped.Extensions.DependencyInjection.Attributed;
+using Devlooped.Extensions.DependencyInjection;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Xunit.Abstractions;
-using AnalyzerTest = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerTest<Devlooped.Extensions.DependencyInjection.Attributed.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<Devlooped.Extensions.DependencyInjection.Attributed.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+using AnalyzerTest = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerTest<Devlooped.Extensions.DependencyInjection.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<Devlooped.Extensions.DependencyInjection.AddServicesAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Tests.CodeAnalysis;
 
