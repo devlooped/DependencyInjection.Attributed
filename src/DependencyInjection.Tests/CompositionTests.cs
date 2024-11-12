@@ -62,6 +62,19 @@ public class CompositionTests
 
         Assert.Same(singleton, instance.Singleton);
     }
+
+    [Fact]
+    public void RegisterKeyedService()
+    {
+        var collection = new ServiceCollection();
+        collection.AddServices();
+        var services = collection.BuildServiceProvider();
+
+        var first = services.GetRequiredKeyedService<SingletonService>("foo");
+        var second = services.GetRequiredKeyedService<SingletonService>("foo");
+
+        Assert.Same(first, second);
+    }
 }
 
 public interface ICompositionSingleton { }
@@ -70,6 +83,7 @@ public interface ICompositionTransient { }
 [Shared]
 [Export]
 [Export(typeof(ICompositionSingleton))]
+[Export("foo")]
 public class SingletonService : ICompositionSingleton
 {
 }

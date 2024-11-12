@@ -97,7 +97,7 @@ public class IncrementalGenerator : IIncrementalGenerator
                             lifetime = (int)serviceAttr.ConstructorArguments[0].Value!;
                         }
                     }
-                    else
+                    else if (IsExport(attr))
                     {
                         // In NuGet MEF, [Shared] makes exports singleton
                         if (attrs.Any(a => a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.Composition.SharedAttribute"))
@@ -116,11 +116,10 @@ public class IncrementalGenerator : IIncrementalGenerator
                         }
 
                         // Consider the [Export(contractName)] as a keyed service with the contract name as the key.
-                        if (attrs.FirstOrDefault(IsExport) is { } export &&
-                            export.ConstructorArguments.Length > 0 &&
-                            export.ConstructorArguments[0].Kind == TypedConstantKind.Primitive)
+                        if (attr.ConstructorArguments.Length > 0 &&
+                            attr.ConstructorArguments[0].Kind == TypedConstantKind.Primitive)
                         {
-                            key = export.ConstructorArguments[0];
+                            key = attr.ConstructorArguments[0];
                         }
                     }
 
