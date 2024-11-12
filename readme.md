@@ -63,6 +63,31 @@ And that's it. The source generator will discover annotated types in the current
 project and all its references too. Since the registration code is generated at 
 compile-time, there is no run-time reflection (or dependencies) whatsoever.
 
+You can also avoid attributes entirely by using a convention-based approach, which 
+is nevertheless still compile-time checked and source-generated. This allows 
+registering services for which you don't even have the source code to annotate:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddServices(typeof(IRepository), ServiceLifetime.Scoped);
+// ...
+```
+
+You can also use a regular expression to match services by name instead:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddServices(".*Service$");  // defaults to ServiceLifetime.Singleton
+// ...
+```
+
+Or a combination of both, as needed. In all cases, NO run-time reflection is 
+ever performed, and the compile-time source generator will evaluate the types 
+that are assignable to the given type or matching full type names and emit 
+the typed registrations as needed.
+
 ### Keyed Services
 
 [Keyed services](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-8.0#keyed-services) 
@@ -104,6 +129,8 @@ right `INotificationService` will be injected, based on the key provided.
 
 Note you can also register the same service using multiple keys, as shown in the 
 `EmailNotificationService` above.
+
+> Keyed services are a feature of version 8.0+ of Microsoft.Extensions.DependencyInjection
 
 ## How It Works
 

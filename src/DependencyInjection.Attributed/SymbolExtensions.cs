@@ -88,7 +88,8 @@ static class SymbolExtensions
         if (baseTypeOrInterface is INamedTypeSymbol namedExpected &&
             @this is INamedTypeSymbol namedActual &&
             namedActual.IsGenericType &&
-            namedActual.ConstructedFrom.Equals(namedExpected, SymbolEqualityComparer.Default))
+            (namedActual.ConstructedFrom.Equals(namedExpected, SymbolEqualityComparer.Default) ||
+            namedActual.ConstructedFrom.Equals(namedExpected.OriginalDefinition, SymbolEqualityComparer.Default)))
             return true;
 
         foreach (var iface in @this.AllInterfaces)

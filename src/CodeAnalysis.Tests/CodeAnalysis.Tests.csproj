@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -13,10 +13,13 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.2" />
+    <PackageReference Include="ThisAssembly.Resources" Version="2.0.8" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DependencyInjection.Attributed\Attributed.csproj" />
   </ItemGroup>
+
+  <Import Project="..\DependencyInjection.Attributed.Tests\ContentFiles.targets"  />
 
 </Project>
