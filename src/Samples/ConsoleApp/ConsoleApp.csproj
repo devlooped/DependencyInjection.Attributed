@@ -20,6 +20,5 @@
     <ProjectReference Include="..\..\DependencyInjection\DependencyInjection.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
   </ItemGroup>
 
-  <Import Project="..\..\DependencyInjection.Tests\ContentFiles.targets"  />
   <Import Project="..\..\DependencyInjection\Devlooped.Extensions.DependencyInjection.targets" />
 </Project>

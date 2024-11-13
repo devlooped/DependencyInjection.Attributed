@@ -15,25 +15,31 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="StaticGenerator.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="StaticGenerator.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Devlooped.Extensions.DependencyInjection.props" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
     <None Update="Devlooped.Extensions.DependencyInjection.targets" CopyToOutputDirectory="PreserveNewest" PackFolder="buildTransitive" />
+    <!--
     <Compile Update="AddServicesNoReflectionExtension.cs" Pack="true" />
     <Compile Update="ServiceAttribute*.cs" Pack="true" />
+    -->
+    <EmbeddedCode Include="ServiceAttribute*.cs;AddServicesNoReflectionExtension.cs" />
   </ItemGroup>
+
+  <Target Name="CopyEmbeddedCode" Inputs="@(EmbeddedCode)" Outputs="@(EmbeddedCode -> '$(IntermediateOutputPath)%(Filename).txt')">
+    <Copy SourceFiles="@(EmbeddedCode)" DestinationFiles="@(EmbeddedCode -> '$(IntermediateOutputPath)%(Filename).txt')" SkipUnchangedFiles="true" />
+   </Target>
+
+  <Target Name="AddEmbeddedResources" DependsOnTargets="CopyEmbeddedCode" BeforeTargets="SplitResourcesByCulture">
+    <ItemGroup>
+      <EmbeddedResource Include="@(EmbeddedCode -> '$(IntermediateOutputPath)%(Filename).txt')" Link="%(EmbeddedCode.Filename).txt" Type="Non-Resx" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="NuGetizer" Version="1.2.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" Pack="false" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
     <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
+    <PackageReference Include="ThisAssembly.Resources" Version="2.0.8" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="PokePackageVersion" BeforeTargets="GetPackageContents" DependsOnTargets="CopyFilesToOutputDirectory" Condition="'$(dotnet-nugetize)' == '' and Exists('$(OutputPath)\Devlooped.Extensions.DependencyInjection.props')">

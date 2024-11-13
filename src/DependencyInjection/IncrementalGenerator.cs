@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using KeyedService = (Microsoft.CodeAnalysis.INamedTypeSymbol Type, Microsoft.CodeAnalysis.TypedConstant? Key);
 
 namespace Devlooped.Extensions.DependencyInjection;
@@ -21,7 +22,7 @@ namespace Devlooped.Extensions.DependencyInjection;
 public class IncrementalGenerator : IIncrementalGenerator
 {
     record ServiceSymbol(INamedTypeSymbol Type, int Lifetime, TypedConstant? Key);
-    record ServiceRegistration(int Lifetime, INamedTypeSymbol? AssignableTo, string? FullNameExpression)
+    record ServiceRegistration(int Lifetime, TypeSyntax? AssignableTo, string? FullNameExpression)
     {
         Regex? regex;
 
@@ -154,7 +155,10 @@ public class IncrementalGenerator : IIncrementalGenerator
             foreach (var registration in registrations)
             {
                 // check of typeSymbol is assignable (is the same type, inherits from it or implements if its an interface) to registration.AssignableTo
-                if (registration!.AssignableTo is not null && !typeSymbol.Is(registration.AssignableTo))
+                if (registration!.AssignableTo is not null &&
+                    // Resolve the type against the current compilation
+                    compilation.GetSemanticModel(registration.AssignableTo.SyntaxTree).GetSymbolInfo(registration.AssignableTo).Symbol is INamedTypeSymbol assignableTo &&
+                    !typeSymbol.Is(assignableTo))
                     continue;
 
                 if (registration!.FullNameExpression != null && !registration.Regex.IsMatch(typeSymbol.ToFullName(compilation)))
@@ -203,7 +207,33 @@ public class IncrementalGenerator : IIncrementalGenerator
 
     static ServiceRegistration? GetServiceRegistration(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        var symbolInfo = semanticModel.GetSymbolInfo(invocation);
+        static string? GetInvokedMethodName(InvocationExpressionSyntax invocation) => invocation.Expression switch
+        {
+            MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.Text,
+            IdentifierNameSyntax identifierName => identifierName.Identifier.Text,
+            _ => null
+        };
+
+        // Quick checks first without semantic analysis of any kind.
+        if (invocation.ArgumentList.Arguments.Count == 0 || GetInvokedMethodName(invocation) != nameof(AddServicesNoReflectionExtension.AddServices))
+            return null;
+
+        // This is somewhat expensive, so we try to first discard invocations that don't look like our 
+        // target first (no args and wrong method name), before moving on to semantic analyis.
+
+        var options = (CSharpParseOptions)invocation.SyntaxTree.Options;
+
+        // NOTE: we need to add the sources that *another* generator emits (the static files) 
+        // because otherwise all invocations will basically have no semantic info since it wasn't there 
+        // when the source generations invocations started.
+        var compilation = semanticModel.Compilation.AddSyntaxTrees(
+            CSharpSyntaxTree.ParseText(ThisAssembly.Resources.ServiceAttribute.Text, options),
+            CSharpSyntaxTree.ParseText(ThisAssembly.Resources.ServiceAttribute_1.Text, options),
+            CSharpSyntaxTree.ParseText(ThisAssembly.Resources.AddServicesNoReflectionExtension.Text, options));
+
+        var model = compilation.GetSemanticModel(invocation.SyntaxTree);
+
+        var symbolInfo = model.GetSymbolInfo(invocation);
         if (symbolInfo.Symbol is IMethodSymbol methodSymbol &&
             methodSymbol.GetAttributes().Any(attr => attr.AttributeClass?.Name == "DDIAddServicesAttribute") &&
             methodSymbol.Parameters.Length >= 2)
@@ -211,28 +241,28 @@ public class IncrementalGenerator : IIncrementalGenerator
             var defaultLifetime = methodSymbol.Parameters.FirstOrDefault(x => x.Type.Name == "ServiceLifetime" && x.HasExplicitDefaultValue)?.ExplicitDefaultValue;
             // This allows us to change the API-provided default without having to change the source generator to match, if needed.
             var lifetime = defaultLifetime is int value ? value : 0;
-            INamedTypeSymbol? assignableTo = null;
+            TypeSyntax? assignableTo = null;
             string? fullNameExpression = null;
 
             foreach (var argument in invocation.ArgumentList.Arguments)
             {
-                var typeInfo = semanticModel.GetTypeInfo(argument.Expression).Type;
+                var typeInfo = model.GetTypeInfo(argument.Expression).Type;
 
                 if (typeInfo is INamedTypeSymbol namedType)
                 {
                     if (namedType.Name == "ServiceLifetime")
                     {
-                        lifetime = (int?)semanticModel.GetConstantValue(argument.Expression).Value ?? 0;
+                        lifetime = (int?)model.GetConstantValue(argument.Expression).Value ?? 0;
                     }
                     else if (namedType.Name == "Type" && argument.Expression is TypeOfExpressionSyntax typeOf &&
-                        semanticModel.GetSymbolInfo(typeOf.Type).Symbol is INamedTypeSymbol typeSymbol)
+                        model.GetSymbolInfo(typeOf.Type).Symbol is INamedTypeSymbol typeSymbol)
                     {
                         // TODO: analyzer error if argument is not typeof(T)
-                        assignableTo = typeSymbol;
+                        assignableTo = typeOf.Type;
                     }
                     else if (namedType.SpecialType == SpecialType.System_String)
                     {
-                        fullNameExpression = semanticModel.GetConstantValue(argument.Expression).Value as string;
+                        fullNameExpression = model.GetConstantValue(argument.Expression).Value as string;
                     }
                 }
             }
@@ -250,6 +280,13 @@ public class IncrementalGenerator : IIncrementalGenerator
         var builder = new StringBuilder()
             .AppendLine("// <auto-generated />");
 
+        var rootNs = data.Options.Config.GlobalOptions.TryGetValue("build_property.AddServicesNamespace", out var value) && !string.IsNullOrEmpty(value)
+            ? value
+            : "Microsoft.Extensions.DependencyInjection";
+
+        var className = data.Options.Config.GlobalOptions.TryGetValue("build_property.AddServicesClassName", out value) && !string.IsNullOrEmpty(value) ?
+            value : "AddServicesNoReflectionExtension";
+
         foreach (var alias in data.Options.Compilation.References.SelectMany(r => r.Properties.Aliases))
         {
             builder.AppendLine($"extern alias {alias};");
@@ -260,9 +297,9 @@ public class IncrementalGenerator : IIncrementalGenerator
             using Microsoft.Extensions.DependencyInjection.Extensions;
             using System;
             
-            namespace Microsoft.Extensions.DependencyInjection
+            namespace {{rootNs}}
             {
-                static partial class AddServicesNoReflectionExtension
+                static partial class {{className}}
                 {
                     static partial void {{methodName}}Services(IServiceCollection services)
                     {
