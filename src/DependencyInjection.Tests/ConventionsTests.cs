@@ -11,32 +11,32 @@ namespace Tests.DependencyInjection;
 
 public class ConventionsTests(ITestOutputHelper Output)
 {
-    //[Fact]
-    //public void RegisterRepositoryServices()
-    //{
-    //    var conventions = new ServiceCollection();
-    //    conventions.AddSingleton(Output);
-    //    conventions.AddServices(typeof(IRepository));
-    //    var services = conventions.BuildServiceProvider();
+    [Fact]
+    public void RegisterRepositoryServices()
+    {
+        var conventions = new ServiceCollection();
+        conventions.AddSingleton(Output);
+        conventions.AddServices(typeof(IRepository));
+        var services = conventions.BuildServiceProvider();
 
-    //    var instance = services.GetServices<IRepository>().ToList();
+        var instance = services.GetServices<IRepository>().ToList();
 
-    //    Assert.Equal(2, instance.Count);
-    //}
+        Assert.Equal(2, instance.Count);
+    }
 
-    //[Fact]
-    //public void RegisterServiceByRegex()
-    //{
-    //    var conventions = new ServiceCollection();
-    //    conventions.AddSingleton(Output);
-    //    conventions.AddServices(nameof(ConventionsTests), ServiceLifetime.Transient);
-    //    var services = conventions.BuildServiceProvider();
+    [Fact]
+    public void RegisterServiceByRegex()
+    {
+        var conventions = new ServiceCollection();
+        conventions.AddSingleton(Output);
+        conventions.AddServices(nameof(ConventionsTests), ServiceLifetime.Transient);
+        var services = conventions.BuildServiceProvider();
 
-    //    var instance = services.GetRequiredService<ConventionsTests>();
-    //    var instance2 = services.GetRequiredService<ConventionsTests>();
+        var instance = services.GetRequiredService<ConventionsTests>();
+        var instance2 = services.GetRequiredService<ConventionsTests>();
 
-    //    Assert.NotSame(instance, instance2);
-    //}
+        Assert.NotSame(instance, instance2);
+    }
 
     [Fact]
     public void RegisterGenericServices()
