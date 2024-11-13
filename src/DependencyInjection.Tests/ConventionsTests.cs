@@ -43,7 +43,9 @@ public class ConventionsTests(ITestOutputHelper Output)
     {
         var conventions = new ServiceCollection();
 
+#pragma warning disable DDI003
         conventions.AddServices(typeof(IGenericRepository<>), ServiceLifetime.Scoped);
+#pragma warning restore DDI003
 
         var services = conventions.BuildServiceProvider();
 

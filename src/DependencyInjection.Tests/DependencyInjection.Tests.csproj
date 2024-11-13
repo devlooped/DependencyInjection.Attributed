@@ -28,7 +28,6 @@
     <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 
-  <Import Project="ContentFiles.targets" />
   <Import Project="..\DependencyInjection\Devlooped.Extensions.DependencyInjection.targets" />
 
 </Project>
