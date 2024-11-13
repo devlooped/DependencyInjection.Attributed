@@ -8,7 +8,8 @@
 
 <!-- #content -->
 
-Automatic compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies.
+Automatic compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies, 
+from conventions or attributes.
 
 ## Usage
 

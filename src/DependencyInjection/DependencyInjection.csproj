@@ -5,7 +5,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Devlooped.Extensions.DependencyInjection</AssemblyName>
     <PackageId>Devlooped.Extensions.DependencyInjection</PackageId>
-    <Title>Automatic compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies.</Title>
+    <Title>
+      Automatic compile-time service registrations for Microsoft.Extensions.DependencyInjection with no run-time dependencies, from conventions or attributes.
+    </Title>
     <Description>$(Title)</Description>
     <PackFolder>analyzers/dotnet</PackFolder>
     <IsRoslynComponent>true</IsRoslynComponent>
