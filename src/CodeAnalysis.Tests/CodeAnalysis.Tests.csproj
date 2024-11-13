@@ -20,6 +20,4 @@
     <ProjectReference Include="..\DependencyInjection\DependencyInjection.csproj" />
   </ItemGroup>
 
-  <Import Project="..\DependencyInjection.Tests\ContentFiles.targets"  />
-
 </Project>

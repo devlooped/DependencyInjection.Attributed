@@ -43,9 +43,9 @@ public class AddServicesAnalyzerTests(ITestOutputHelper Output)
             {
                 Sources =
                 {
-                    ThisAssembly.Resources.AddServicesNoReflectionExtension.Text,
-                    ThisAssembly.Resources.ServiceAttribute.Text,
-                    ThisAssembly.Resources.ServiceAttribute_1.Text,
+                    StaticGenerator.AddServicesExtension,
+                    StaticGenerator.ServiceAttribute,
+                    StaticGenerator.ServiceAttributeT,
                 },
                 ReferenceAssemblies = new ReferenceAssemblies(
                     "net8.0",
@@ -89,9 +89,9 @@ public class AddServicesAnalyzerTests(ITestOutputHelper Output)
             {
                 Sources =
                 {
-                    ThisAssembly.Resources.AddServicesNoReflectionExtension.Text,
-                    ThisAssembly.Resources.ServiceAttribute.Text,
-                    ThisAssembly.Resources.ServiceAttribute_1.Text,
+                    StaticGenerator.AddServicesExtension,
+                    StaticGenerator.ServiceAttribute,
+                    StaticGenerator.ServiceAttributeT,
                 },
                 ReferenceAssemblies = new ReferenceAssemblies(
                     "net8.0",
@@ -130,9 +130,9 @@ public class AddServicesAnalyzerTests(ITestOutputHelper Output)
             {
                 Sources =
                 {
-                    ThisAssembly.Resources.AddServicesNoReflectionExtension.Text,
-                    ThisAssembly.Resources.ServiceAttribute.Text,
-                    ThisAssembly.Resources.ServiceAttribute_1.Text,
+                    StaticGenerator.AddServicesExtension,
+                    StaticGenerator.ServiceAttribute,
+                    StaticGenerator.ServiceAttributeT,
                 },
                 ReferenceAssemblies = new ReferenceAssemblies(
                     "net8.0",
@@ -177,9 +177,9 @@ public class AddServicesAnalyzerTests(ITestOutputHelper Output)
             {
                 Sources =
                 {
-                    ThisAssembly.Resources.AddServicesNoReflectionExtension.Text,
-                    ThisAssembly.Resources.ServiceAttribute.Text,
-                    ThisAssembly.Resources.ServiceAttribute_1.Text,
+                    StaticGenerator.AddServicesExtension,
+                    StaticGenerator.ServiceAttribute,
+                    StaticGenerator.ServiceAttributeT,
                 },
                 ReferenceAssemblies = new ReferenceAssemblies(
                     "net8.0",

@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <CompilerVisibleProperty Include="IsTestProject" />
+    <CompilerVisibleProperty Include="AddServicesNamespace" />
+    <CompilerVisibleProperty Include="AddServicesClassName" />
   </ItemGroup>
 
 </Project>
