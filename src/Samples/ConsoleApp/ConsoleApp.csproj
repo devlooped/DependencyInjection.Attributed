@@ -8,6 +8,7 @@
     <!-- Allow inspection of generated code under obj -->
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <WarningsAsErrors>true</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
