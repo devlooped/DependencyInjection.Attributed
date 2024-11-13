@@ -141,7 +141,7 @@ public class IncrementalGenerator : IIncrementalGenerator
         // First get all AddServices(type, regex, lifetime) invocations.
         var methodInvocations = context.SyntaxProvider
             .CreateSyntaxProvider(
-                predicate: static (node, _) => node is InvocationExpressionSyntax,
+                predicate: static (node, _) => node is InvocationExpressionSyntax invocation && invocation.ArgumentList.Arguments.Count != 0 && GetInvokedMethodName(invocation) == nameof(AddServicesNoReflectionExtension.AddServices),
                 transform: static (ctx, _) => GetServiceRegistration((InvocationExpressionSyntax)ctx.Node, ctx.SemanticModel))
             .Where(details => details != null)
             .Collect();
@@ -205,21 +205,17 @@ public class IncrementalGenerator : IIncrementalGenerator
             (ctx, data) => AddPartial("AddKeyedTransient", ctx, data));
     }
 
+    static string? GetInvokedMethodName(InvocationExpressionSyntax invocation) => invocation.Expression switch
+    {
+        MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.Text,
+        IdentifierNameSyntax identifierName => identifierName.Identifier.Text,
+        _ => null
+    };
+
     static ServiceRegistration? GetServiceRegistration(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        static string? GetInvokedMethodName(InvocationExpressionSyntax invocation) => invocation.Expression switch
-        {
-            MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.Text,
-            IdentifierNameSyntax identifierName => identifierName.Identifier.Text,
-            _ => null
-        };
-
-        // Quick checks first without semantic analysis of any kind.
-        if (invocation.ArgumentList.Arguments.Count == 0 || GetInvokedMethodName(invocation) != nameof(AddServicesNoReflectionExtension.AddServices))
-            return null;
-
         // This is somewhat expensive, so we try to first discard invocations that don't look like our 
-        // target first (no args and wrong method name), before moving on to semantic analyis.
+        // target first (no args and wrong method name), in the predicate, before moving on to semantic analyis here.
 
         var options = (CSharpParseOptions)invocation.SyntaxTree.Options;
 
