@@ -40,6 +40,16 @@ public class AddServicesAnalyzer : DiagnosticAnalyzer
 
             Location? location = default;
 
+            static bool IsDDICode(SyntaxNode node, SemanticModel semantic)
+            {
+                if (node.Ancestors().OfType<MethodDeclarationSyntax>().FirstOrDefault() is { } method &&
+                    semantic.GetDeclaredSymbol(method) is { } declaration &&
+                    declaration.GetAttributes().Any(attr => attr.AttributeClass?.Name == "DDIAddServicesAttribute"))
+                    return true;
+
+                return false;
+            }
+
             startContext.RegisterSemanticModelAction(semanticContext =>
             {
                 var semantic = semanticContext.SemanticModel;
@@ -48,9 +58,8 @@ public class AddServicesAnalyzer : DiagnosticAnalyzer
                     .DescendantNodes()
                     .OfType<InvocationExpressionSyntax>()
                     .Select(invocation => new { Invocation = invocation, semantic.GetSymbolInfo(invocation, semanticContext.CancellationToken).Symbol })
-                    // We don't consider invocations from methods that have the DDIAddServicesAttribute as user-provided, since we do that 
-                    // in our type/regex overloads. Users need to invoke those methods in turn.
-                    .Where(x => x.Symbol is IMethodSymbol method && !method.GetAttributes().Any(attr => attr.AttributeClass?.Name == "DDIAddServicesAttribute"))
+                    // It has to be user-provided code, not our own extensions/overloads.
+                    .Where(x => !IsDDICode(x.Invocation, semantic))
                     .Select(x => new { x.Invocation, Method = (IMethodSymbol)x.Symbol! });
 
                 bool IsServiceCollectionExtension(IMethodSymbol method) => method.IsExtensionMethod &&
